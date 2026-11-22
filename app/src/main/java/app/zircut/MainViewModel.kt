@@ -40,7 +40,6 @@ import app.zircut.core.ExportSettings
 import app.zircut.core.Frame
 import app.zircut.core.Fx
 import app.zircut.core.Dsp
-import app.zircut.core.Config
 import app.zircut.core.Diag
 import app.zircut.core.Styles
 import app.zircut.core.VideoInfo
