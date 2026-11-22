@@ -1,0 +1,5 @@
+Fonts bundled with ZirCut (SIL Open Font License 1.1, https://openfontlicense.org):
+- Sahel (Black): Copyright (c) 2016 by Saber Rastikerdar.
+- Estedad (variable): Copyright (c) 2020 by Amin Abedi, Reserved Font Name "Estedad".
+- Mikhak (Black): Copyright (c) 2019 by Amin Abedi.
+The fonts are included unmodified.

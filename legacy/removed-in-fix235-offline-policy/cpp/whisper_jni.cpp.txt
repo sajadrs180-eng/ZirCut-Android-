@@ -1,0 +1,148 @@
+#include <jni.h>
+#include <string>
+#include <vector>
+#include <cstring>
+#include "whisper.h"
+
+static std::string sanitize_utf8(const char *s) {
+    std::string out;
+    size_t n = strlen(s);
+    size_t i = 0;
+    while (i < n) {
+        unsigned char c = (unsigned char) s[i];
+        int len = c < 0x80 ? 1 : (c >> 5) == 6 ? 2 : (c >> 4) == 14 ? 3 : 0;
+        if (len == 0 || i + len > n) { i++; continue; }
+        bool ok = true;
+        for (int k = 1; k < len; k++) {
+            if (((unsigned char) s[i + k] & 0xC0) != 0x80) { ok = false; break; }
+        }
+        if (ok) { out.append(s + i, len); i += len; } else { i++; }
+    }
+    return out;
+}
+
+extern "C" {
+
+JNIEXPORT jlong JNICALL
+Java_app_zircut_core_WhisperBridge_loadModel(JNIEnv *env, jobject, jstring path) {
+    const char *p = env->GetStringUTFChars(path, nullptr);
+    whisper_context_params cp = whisper_context_default_params();
+    cp.use_gpu = false;
+    whisper_context *ctx = whisper_init_from_file_with_params(p, cp);
+    env->ReleaseStringUTFChars(path, p);
+    return (jlong) ctx;
+}
+
+JNIEXPORT void JNICALL
+Java_app_zircut_core_WhisperBridge_release(JNIEnv *, jobject, jlong ctxPtr) {
+    if (ctxPtr != 0) whisper_free((whisper_context *) ctxPtr);
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_app_zircut_core_WhisperBridge_transcribe(JNIEnv *env, jobject, jlong ctxPtr,
+                                              jfloatArray audio, jstring lang, jint threads, jint beam) {
+    auto *ctx = (whisper_context *) ctxPtr;
+    jsize n = env->GetArrayLength(audio);
+    jfloat *data = env->GetFloatArrayElements(audio, nullptr);
+    const char *l = env->GetStringUTFChars(lang, nullptr);
+    std::string language(l);
+    env->ReleaseStringUTFChars(lang, l);
+
+    whisper_full_params wp = whisper_full_default_params(beam > 1 ? WHISPER_SAMPLING_BEAM_SEARCH : WHISPER_SAMPLING_GREEDY);
+    wp.beam_search.beam_size = beam < 1 ? 1 : beam;
+    wp.greedy.best_of = beam < 1 ? 1 : beam;
+    wp.temperature_inc = 0.2f;
+    wp.no_speech_thold = 0.6f;
+    wp.entropy_thold = 2.4f;
+    wp.logprob_thold = -1.0f;
+    wp.language = language.c_str();
+    wp.n_threads = threads;
+    wp.translate = false;
+    wp.print_progress = false;
+    wp.print_realtime = false;
+    wp.print_timestamps = false;
+    wp.print_special = false;
+    wp.no_context = true;
+    wp.suppress_blank = true;
+    wp.token_timestamps = true;
+    wp.max_len = 0;
+    wp.split_on_word = false;
+
+    int rc = whisper_full(ctx, wp, data, n);
+    env->ReleaseFloatArrayElements(audio, data, JNI_ABORT);
+
+    struct W { std::string text; int64_t t0; int64_t t1; float p; };
+    std::vector<std::string> rows;
+    if (rc == 0) {
+        const whisper_token eot = whisper_token_eot(ctx);
+        int ns = whisper_full_n_segments(ctx);
+        for (int i = 0; i < ns; i++) {
+            int64_t s0 = whisper_full_get_segment_t0(ctx, i);
+            int64_t s1 = whisper_full_get_segment_t1(ctx, i);
+            if (s1 <= s0) s1 = s0 + 50;
+            std::vector<W> words;
+            std::string cur;
+            int64_t ws = 0, we = 0;
+            float mp = 1.0f;
+            auto flush = [&]() {
+                if (!cur.empty()) words.push_back({cur, ws, we, mp});
+                cur.clear();
+                mp = 1.0f;
+            };
+            int nt = whisper_full_n_tokens(ctx, i);
+            for (int j = 0; j < nt; j++) {
+                whisper_token_data d = whisper_full_get_token_data(ctx, i, j);
+                if (d.id >= eot) continue;
+                const char *tx = whisper_full_get_token_text(ctx, i, j);
+                if (!tx) continue;
+                std::string t(tx);
+                bool space = !t.empty() && t[0] == ' ';
+                if (space) flush();
+                size_t k = t.find_first_not_of(' ');
+                if (k == std::string::npos) continue;
+                t = t.substr(k);
+                if (cur.empty()) ws = d.t0;
+                if (d.p < mp) mp = d.p;
+                cur += t;
+                we = d.t1;
+            }
+            flush();
+            if (words.empty()) continue;
+            // sanity check token timings; otherwise spread words across the segment by length
+            bool ok = true;
+            int64_t prev = s0 - 30;
+            for (auto &w : words) {
+                if (w.t1 <= w.t0 || w.t0 < prev - 5 || w.t0 < s0 - 50 || w.t1 > s1 + 50) { ok = false; break; }
+                prev = w.t0;
+            }
+            if (!ok) {
+                size_t total = 0;
+                for (auto &w : words) total += w.text.size();
+                if (total == 0) total = 1;
+                int64_t cursor = s0;
+                for (size_t q = 0; q < words.size(); q++) {
+                    int64_t d = (s1 - s0) * (int64_t) words[q].text.size() / (int64_t) total;
+                    words[q].t0 = cursor;
+                    words[q].t1 = (q + 1 == words.size()) ? s1 : cursor + d;
+                    cursor += d;
+                }
+            }
+            for (auto &w : words) {
+                std::string clean = sanitize_utf8(w.text.c_str());
+                if (clean.empty()) continue;
+                rows.push_back(std::to_string(w.t0 * 10) + "\t" + std::to_string(w.t1 * 10) + "\t" + std::to_string((int) (w.p * 1000.0f)) + "\t" + clean);
+            }
+        }
+    }
+
+    jclass sc = env->FindClass("java/lang/String");
+    jobjectArray arr = env->NewObjectArray((jsize) rows.size(), sc, nullptr);
+    for (size_t i = 0; i < rows.size(); i++) {
+        jstring js = env->NewStringUTF(rows[i].c_str());
+        env->SetObjectArrayElement(arr, (jsize) i, js);
+        env->DeleteLocalRef(js);
+    }
+    return arr;
+}
+
+}

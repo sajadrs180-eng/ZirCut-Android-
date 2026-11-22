@@ -1,0 +1,343 @@
+package app.zircut.core
+
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import kotlin.math.abs
+
+/** Online recognition: the app sends audio to the ZirCut Cloudflare Worker, which forwards it to Groq (whisper-large-v3-turbo). The Groq key lives only in the Worker. */
+object CloudTranscriber {
+    data class W(val text: String, val startMs: Long, val endMs: Long)
+
+    private class T(val text: String, val s: Long, val e: Long)
+
+    private class HintRejected : IOException("hint rejected")
+
+    /** The server answered with an error (so the upload itself got through). */
+    private class HttpFail(val code: Int, detail: String = "") : IOException("خطای سرویس آنلاین ($code)" + (if (detail.isNotBlank()) ": " + detail.trim().take(160) else ""))
+
+    /** A short, correctly written colloquial Persian sample: it nudges the model toward clean spelling and spacing. */
+    private const val HINT = "سلام دوستان، خوش اومدید. بیست ثانیه، سی ثانیه، چهل و پنج ثانیه، یک دقیقه، پنج دقیقه، یک ساعت، سه روز، دو هفته، یک ماه، ده سال. صد، دویست، هزار، میلیون، میلیارد تومن. می‌خوام، نمی‌دونم، باهاتون، اومدید، گفتم، مثلاً، یعنی، دقیقاً، واقعاً. ویدیو، یوتیوب، اینستاگرام، گوشی، اینترنت، فیلترشکن، گیم، تیم، لول، رنک، پلیر، آنلاین."
+
+    /** Used for pieces where only "music" came back: tells the model a speaker is talking over the music. */
+    private const val MUSIC_HINT = "گوینده فارسی صحبت می‌کند و موسیقی پس‌زمینه پخش می‌شود. فقط حرف‌های گوینده نوشته شود. مثلاً: سلام دوستان، می‌خوام درباره‌ی یه موضوع جالب صحبت کنم."
+
+    private val musicMode = ThreadLocal<Boolean>()
+
+    /** How many online answers arrived, and how many of them had their spelling fixed by the Worker (shown on the result screen). */
+    val answeredCount = java.util.concurrent.atomic.AtomicInteger(0)
+    val polishedCount = java.util.concurrent.atomic.AtomicInteger(0)
+    private val musicWords = setOf("موسیقی", "موزیک", "music", "♪", "♫")
+
+    /** True when the answer is empty or only says "music" (the speech under the music was not written). */
+    fun isMusicOnly(ws: List<W>): Boolean = ws.isEmpty() || ws.all {
+        val k = it.text.trim { c -> !c.isLetter() && c != '♪' && c != '♫' }.lowercase()
+        k.isEmpty() || k in musicWords
+    }
+
+    private const val SR = 16000
+    private const val MIN_SAMPLES = SR
+
+    /** Largest piece (in samples) that went through a filtered network; it only ever shrinks while the app is open. */
+    @Volatile private var maxSamples = 30 * SR
+
+    /** Set when the server could not read the compressed audio and the plain WAV worked instead. */
+    @Volatile private var useWav = false
+
+    /**
+     * Uploads are kept small on purpose: filtered mobile networks cut big uploads (connection reset).
+     * The audio is compressed (AAC, about 2.5 KB per second) and, if a piece is still cut,
+     * it is split in two and each half is sent on its own, so the size adapts to the network by itself.
+     */
+    fun transcribe(workerUrl: String, account: String, token: String, samples: FloatArray, lang: String, music: Boolean = false): List<W> {
+        musicMode.set(music)
+        try {
+            return send(workerUrl, account, token, samples, 0L, lang)
+        } finally {
+            musicMode.remove()
+        }
+    }
+
+    private fun send(workerUrl: String, account: String, token: String, samples: FloatArray, offsetMs: Long, lang: String): List<W> {
+        if (samples.size > maxSamples && samples.size > MIN_SAMPLES * 2) return split(workerUrl, account, token, samples, offsetMs, lang)
+        var last: IOException? = null
+        for (t in 0 until 2) {
+            try {
+                val ws = sendRated(workerUrl, account, token, samples, lang)
+                return if (offsetMs == 0L) ws else ws.map { W(it.text, it.startMs + offsetMs, it.endMs + offsetMs) }
+            } catch (e: HttpFail) {
+                throw e
+            } catch (e: IOException) {
+                last = e
+                try { Thread.sleep(600) } catch (_: InterruptedException) { }
+            }
+        }
+        if (samples.size < MIN_SAMPLES * 2) throw last ?: IOException("upload failed")
+        synchronized(this) { maxSamples = minOf(maxSamples, samples.size / 2) }
+        return split(workerUrl, account, token, samples, offsetMs, lang)
+    }
+
+    private fun split(workerUrl: String, account: String, token: String, samples: FloatArray, offsetMs: Long, lang: String): List<W> {
+        val cut = quietPoint(samples)
+        val a = samples.copyOfRange(0, cut)
+        val b = samples.copyOfRange(cut, samples.size)
+        val first = send(workerUrl, account, token, a, offsetMs, lang)
+        val second = send(workerUrl, account, token, b, offsetMs + cut * 1000L / SR, lang)
+        return first + second
+    }
+
+    /** The quietest 100 ms near the middle, so a cut rarely lands inside a word. */
+    private fun quietPoint(x: FloatArray): Int {
+        val mid = x.size / 2
+        val span = x.size / 6
+        val frame = SR / 10
+        var best = mid
+        var bestE = Float.MAX_VALUE
+        var p = mid - span
+        while (p + frame <= mid + span) {
+            var e = 0f
+            for (k in p until p + frame) e += x[k] * x[k]
+            if (e < bestE) { bestE = e; best = p + frame / 2 }
+            p += frame
+        }
+        return best.coerceIn(SR / 2, x.size - SR / 2)
+    }
+
+    /** Groq limits requests per minute: on "429" wait and try again instead of failing the whole video. */
+    private fun sendRated(workerUrl: String, account: String, token: String, samples: FloatArray, lang: String): List<W> {
+        var n = 0
+        while (true) {
+            try {
+                return sendOnce(workerUrl, account, token, samples, lang)
+            } catch (e: HttpFail) {
+                if (e.code != 429 || ++n > 4) throw e
+                try { Thread.sleep(4000L * n) } catch (_: InterruptedException) { throw e }
+            }
+        }
+    }
+
+    private fun sendOnce(workerUrl: String, account: String, token: String, samples: FloatArray, lang: String): List<W> {
+        val dur = samples.size / 16f
+        if (!useWav) {
+            val aac = try { AacEncoder.encode(samples) } catch (e: Exception) { null }
+            if (aac != null && aac.isNotEmpty()) {
+                val b64 = android.util.Base64.encodeToString(aac, android.util.Base64.NO_WRAP)
+                try {
+                    return withHint(workerUrl, account, token, b64, lang, dur, "m4a")
+                } catch (e: HttpFail) {
+                    // the upload arrived but the server could not use it: try the plain WAV once
+                    if (e.code == 429 || e.code == 401 || e.code == 403) throw e
+                    val wav = android.util.Base64.encodeToString(toWav(samples), android.util.Base64.NO_WRAP)
+                    val r = try {
+                        withHint(workerUrl, account, token, wav, lang, dur, "wav")
+                    } catch (e2: IOException) {
+                        // the big WAV usually gets cut by the network: report the server's first answer instead
+                        throw e
+                    }
+                    useWav = true
+                    return r
+                }
+            }
+        }
+        val wav = android.util.Base64.encodeToString(toWav(samples), android.util.Base64.NO_WRAP)
+        return withHint(workerUrl, account, token, wav, lang, dur, "wav")
+    }
+
+    private fun withHint(workerUrl: String, account: String, token: String, b64: String, lang: String, dur: Float, fmt: String): List<W> =
+        try {
+            post(workerUrl, account, token, b64, lang, lang == "fa", dur, fmt)
+        } catch (e: HintRejected) {
+            post(workerUrl, account, token, b64, lang, false, dur, fmt)
+        }
+
+    private fun post(workerUrl: String, account: String, token: String, b64: String, lang: String, hint: Boolean, durMs: Float, fmt: String): List<W> {
+        val body = JSONObject().put("audio", b64).put("task", "transcribe").put("format", fmt)
+        if (lang != "auto") body.put("language", lang)
+        if (hint) body.put("initial_prompt", if (musicMode.get() == true) MUSIC_HINT else HINT)
+        val bytes = body.toString().toByteArray()
+        val viaWorker = workerUrl.isNotBlank()
+        val url = URL(if (viaWorker) workerUrl.trim() else "https://api.cloudflare.com/client/v4/accounts/${account.trim()}/ai/run/@cf/openai/whisper-large-v3-turbo")
+        val conn = (url.openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            connectTimeout = 8_000
+            readTimeout = 60_000
+            doOutput = true
+            setFixedLengthStreamingMode(bytes.size)
+            if (!viaWorker) setRequestProperty("Authorization", "Bearer ${token.trim()}")
+            setRequestProperty("Content-Type", "application/json")
+        }
+        var ok = false
+        try {
+            conn.outputStream.use { it.write(bytes) }
+            val code = conn.responseCode
+            val stream = if (code in 200..299) conn.inputStream else conn.errorStream
+            val text = stream?.bufferedReader()?.readText() ?: ""
+            if (hint && (code == 400 || code == 422)) throw HintRejected()
+            if (code !in 200..299) throw HttpFail(code, text)
+            val root = JSONObject(text)
+            if (root.has("success") && !root.optBoolean("success", true)) throw HttpFail(500)
+            val res = root.optJSONObject("result") ?: root
+            answeredCount.incrementAndGet()
+            if (res.optBoolean("polished", false)) polishedCount.incrementAndGet()
+            val r = parse(res, durMs)
+            ok = true
+            return r
+        } finally {
+            // a healthy connection is kept open and reused: no new TLS handshake for the next piece
+            if (!ok) conn.disconnect()
+        }
+    }
+
+    private fun collect(arr: JSONArray?, into: MutableList<T>) {
+        if (arr == null) return
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val w = o.optString("word").trim()
+            if (w.isEmpty()) continue
+            val s = (o.optDouble("start", 0.0) * 1000).toLong()
+            val e = (o.optDouble("end", 0.0) * 1000).toLong()
+            into.add(T(w, s, maxOf(e, s + 50)))
+        }
+    }
+
+    /**
+     * The model's full text is the most reliable source for spelling and for which words are separate.
+     * The timed word list is only used for timing: each real word of the text gets its time from the matching letters.
+     */
+    private fun parse(res: JSONObject, durMs: Float): List<W> {
+        val segs = res.optJSONArray("segments")
+        val timed = ArrayList<T>()
+        collect(res.optJSONArray("words"), timed)
+        if (timed.isEmpty() && segs != null) {
+            for (i in 0 until segs.length()) collect(segs.optJSONObject(i)?.optJSONArray("words"), timed)
+        }
+        var fullText = res.optString("text").trim()
+        if (fullText.isEmpty() && segs != null) {
+            val sb = StringBuilder()
+            for (i in 0 until segs.length()) sb.append(segs.optJSONObject(i)?.optString("text") ?: "").append(' ')
+            fullText = sb.toString().trim()
+        }
+        val tokens = fullText.split(Regex("\\s+")).filter { it.isNotEmpty() }
+        if (tokens.isEmpty()) {
+            return timed.map { W(it.text, it.s, maxOf(it.e, it.s + 50)) }
+        }
+        if (timed.isNotEmpty()) {
+            val a = align(tokens, timed)
+            if (a != null) return a
+        }
+        val out = ArrayList<W>()
+        if (segs != null && segs.length() > 0) {
+            for (i in 0 until segs.length()) {
+                val sg = segs.optJSONObject(i) ?: continue
+                spread(out, sg.optString("text"), (sg.optDouble("start", 0.0) * 1000).toLong(), (sg.optDouble("end", 0.0) * 1000).toLong())
+            }
+            if (out.size >= tokens.size * 0.9 && out.size <= tokens.size * 1.1) return out
+            out.clear()
+        }
+        spread(out, fullText, 0L, durMs.toLong())
+        return out
+    }
+
+    /** Letters and digits only (no spaces, no half-space, no punctuation), with Arabic letter variants unified. */
+    private fun nz(s: String): String {
+        val b = StringBuilder()
+        for (ch in s) {
+            val c = when (ch) {
+                'ي' -> 'ی'
+                'ك' -> 'ک'
+                else -> ch
+            }
+            if (c.isLetterOrDigit()) b.append(c.lowercaseChar())
+        }
+        return b.toString()
+    }
+
+    private fun align(tokens: List<String>, timed: List<T>): List<W>? {
+        val tn = timed.map { nz(it.text) }
+        val kn = tokens.map { nz(it) }
+        val timedLen = tn.sumOf { it.length }
+        val tokLen = kn.sumOf { it.length }
+        if (timedLen == 0 || tokLen == 0) return null
+        if (abs(timedLen - tokLen) > 0.15 * maxOf(timedLen, tokLen)) return null
+
+        val startOf = IntArray(timed.size)
+        var acc = 0
+        for (i in timed.indices) {
+            startOf[i] = acc
+            acc += tn[i].length
+        }
+        val scale = timedLen.toDouble() / tokLen
+
+        fun ownerOf(pos: Double): Int {
+            var lo = 0
+            var hi = timed.size - 1
+            while (lo < hi) {
+                val mid = (lo + hi + 1) / 2
+                if (startOf[mid] <= pos) lo = mid else hi = mid - 1
+            }
+            return lo
+        }
+
+        fun timeAt(pos: Double, isEnd: Boolean): Long {
+            val p = if (isEnd) maxOf(0.0, pos - 0.001) else minOf(pos, timedLen - 0.001)
+            val o = ownerOf(p)
+            val len = maxOf(1, tn[o].length)
+            val edge = if (isEnd) pos else p
+            val frac = ((edge - startOf[o]) / len).coerceIn(0.0, 1.0)
+            val t = timed[o]
+            return t.s + ((t.e - t.s) * frac).toLong()
+        }
+
+        val out = ArrayList<W>()
+        var cum = 0
+        var prevStart = 0L
+        for (i in tokens.indices) {
+            val len = kn[i].length
+            if (len == 0) {
+                if (out.isNotEmpty()) {
+                    val l = out.removeAt(out.size - 1)
+                    out.add(W(l.text + tokens[i], l.startMs, l.endMs))
+                }
+                continue
+            }
+            var s = timeAt(cum * scale, false)
+            var e = timeAt((cum + len) * scale, true)
+            if (s < prevStart) s = prevStart
+            if (e < s + 50) e = s + 50
+            out.add(W(tokens[i], s, e))
+            prevStart = s
+            cum += len
+        }
+        return if (out.isEmpty()) null else out
+    }
+
+    private fun spread(out: MutableList<W>, text: String, s: Long, e: Long) {
+        val parts = text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        if (parts.isEmpty()) return
+        val total = parts.sumOf { it.length }.coerceAtLeast(1)
+        val end = maxOf(e, s + 200)
+        var cur = s
+        parts.forEachIndexed { i, p ->
+            val d = (end - s) * p.length / total
+            out.add(W(p, cur, if (i == parts.size - 1) end else cur + d))
+            cur += d
+        }
+    }
+
+    private fun toWav(s: FloatArray): ByteArray {
+        val n = s.size * 2
+        val b = ByteBuffer.allocate(44 + n).order(ByteOrder.LITTLE_ENDIAN)
+        b.put("RIFF".toByteArray()).putInt(36 + n).put("WAVE".toByteArray())
+        b.put("fmt ".toByteArray()).putInt(16).putShort(1).putShort(1).putInt(16000).putInt(32000).putShort(2).putShort(16)
+        b.put("data".toByteArray()).putInt(n)
+        for (v in s) {
+            val x = (v.coerceIn(-1f, 1f) * 32767f).toInt()
+            b.putShort(x.toShort())
+        }
+        return b.array()
+    }
+}

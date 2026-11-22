@@ -1,0 +1,119 @@
+package app.zircut.core
+
+import android.content.Context
+import android.net.Uri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.net.HttpURLConnection
+import java.net.URL
+
+class ModelManager(private val ctx: Context) {
+    private val dir = File(ctx.filesDir, "models").apply { mkdirs() }
+
+    fun file(m: ModelSize) = File(dir, m.file)
+    private fun fileOk(m: ModelSize): Boolean = file(m).let { it.exists() && it.length() > 5_000_000 }
+
+    private fun assetPath(m: ModelSize) = "models/" + m.file + ".mp3"
+
+    private fun assetExists(m: ModelSize): Boolean = try {
+        (ctx.assets.list("models") ?: emptyArray()).contains(m.file + ".mp3")
+    } catch (e: Exception) {
+        false
+    }
+
+    /** The model that ships inside the APK (no download needed), if any. */
+    fun bundled(): ModelSize? = ModelSize.values().firstOrNull { assetExists(it) }
+
+    fun has(m: ModelSize): Boolean = fileOk(m) || assetExists(m)
+
+    /** Copies the model that ships inside the APK to app storage (first use only). */
+    suspend fun ensureBundled(m: ModelSize) = withContext(Dispatchers.IO) {
+        if (fileOk(m) || !assetExists(m)) return@withContext
+        val part = File(dir, m.file + ".part")
+        ctx.assets.open(assetPath(m)).use { ins -> part.outputStream().use { o -> ins.copyTo(o, 256 * 1024) } }
+        if (!part.renameTo(file(m))) throw IOException("آماده‌سازی مدل ناموفق بود")
+    }
+
+    private fun sources(m: ModelSize) = listOf(
+        "${Config.MODEL_BASE_URL}/${m.file}",
+        "https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/${m.file}",
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${m.file}"
+    )
+
+    /** Tries each mirror in turn; a cut connection continues from where it stopped instead of starting over. */
+    suspend fun download(m: ModelSize, onProgress: (Float) -> Unit) = withContext(Dispatchers.IO) {
+        val part = File(dir, m.file + ".part")
+        val dest = file(m)
+        var lastErr: Exception? = null
+        val urls = sources(m)
+        var attempt = 0
+        while (attempt < 8) {
+            for (u in urls) {
+                try {
+                    if (fetch(u, part, onProgress)) {
+                        if (!part.renameTo(dest)) throw IOException("ذخیره مدل ناموفق بود")
+                        return@withContext
+                    }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    lastErr = e
+                }
+                ensureActive()
+            }
+            attempt++
+            delay(1500)
+        }
+        throw IOException("دانلود مدل نشد. اینترنت یا فیلترشکن را بررسی کن، یا فایل مدل را از «وارد کردن فایل مدل» بده." + (lastErr?.message?.let { " ($it)" } ?: ""))
+    }
+
+    /** Returns true when the file is complete. */
+    private suspend fun fetch(url: String, part: File, onProgress: (Float) -> Unit): Boolean {
+        val have = if (part.exists()) part.length() else 0L
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 15_000
+            readTimeout = 20_000
+            instanceFollowRedirects = true
+            if (have > 0) setRequestProperty("Range", "bytes=$have-")
+        }
+        try {
+            conn.connect()
+            val code = conn.responseCode
+            if (code == 416) return part.length() > 5_000_000
+            if (code !in 200..299) throw IOException("خطای سرور: $code")
+            val resumed = code == 206
+            val startAt = if (resumed) have else 0L
+            val total = if (conn.contentLengthLong > 0) conn.contentLengthLong + startAt else -1L
+            var read = startAt
+            RandomAccessFile(part, "rw").use { raf ->
+                if (resumed) raf.seek(startAt) else raf.setLength(0)
+                conn.inputStream.use { ins ->
+                    val buf = ByteArray(64 * 1024)
+                    while (true) {
+                        val n = ins.read(buf)
+                        if (n < 0) break
+                        raf.write(buf, 0, n)
+                        read += n
+                        kotlin.coroutines.coroutineContext.ensureActive()
+                        if (total > 0) onProgress(read.toFloat() / total)
+                    }
+                }
+            }
+            return total < 0 || read >= total
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    suspend fun importFrom(uri: Uri, m: ModelSize) = withContext(Dispatchers.IO) {
+        val dest = file(m)
+        ctx.contentResolver.openInputStream(uri)!!.use { ins ->
+            dest.outputStream().use { o -> ins.copyTo(o) }
+        }
+    }
+}

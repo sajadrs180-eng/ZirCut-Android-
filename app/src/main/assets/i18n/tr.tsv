@@ -1,0 +1,681 @@
+متن جدید	Yeni metin
+در حال افزودن عکس…	Fotoğraf ekleniyor…
+افزودن عکس ناموفق بود: {0}	Fotoğraf eklenemedi: {0}
+فایل خوانده نشد	Dosya okunamadı
+تصویر نامعتبر است	Geçersiz görsel
+تصویر خوانده نشد	Görsel okunamadı
+صدا	Ses
+این فایل صدای قابل خواندن ندارد	Bu dosyada okunabilir ses yok
+در حال افزودن صدا…	Ses ekleniyor…
+افزودن صدا ناموفق بود: {0}	Ses eklenemedi: {0}
+ضبط صدا 	Ses kaydı 
+زیرنویسی برای خروجی گرفتن وجود ندارد	Dışa aktarılacak altyazı yok
+هیچ زیرنویسی روی ویدیوی ادیت‌شده نمانده است	Düzenlenen videoda altyazı kalmadı
+فایل SRT در پوشه‌ی Download/ZirCut ذخیره شد	SRT dosyası Download/ZirCut klasörüne kaydedildi
+ذخیره‌ی SRT ناموفق بود	SRT kaydedilemedi
+زیرنویس قابل استفاده‌ای در فایل پیدا نشد	Dosyada kullanılabilir altyazı bulunamadı
+{0} زیرنویس وارد شد	{0} altyazı içe aktarıldı
+ ({0} مورد روی عکس/ویدیوی اضافه یا خارج از زمان رد شد)	 ({0} adet atlandı: fotoğraf/ek video üzerinde veya zaman çizelgesi dışında)
+در حال تشخیص صحنه…	Sahneler algılanıyor…
+در حال تشخیص صحنه… {0}٪	Sahneler algılanıyor… %{0}
+تغییر صحنه‌ی مشخصی پیدا نشد	Belirgin bir sahne değişikliği bulunamadı
+ویدیو در {0} محل تغییر صحنه برش خورد	Video {0} sahne değişikliğinden kesildi
+فایل‌های بلااستفاده پاک شد: 	Kullanılmayan dosyalar silindi: 
+ مگابایت	 MB
+فایل بلااستفاده‌ای پیدا نشد	Kullanılmayan dosya bulunamadı
+فایل LUT خوانده نشد یا بزرگ‌تر از ۸ مگابایت است.	LUT dosyası okunamadı veya 8 MB'tan büyük.
+این فایل یک LUT سه‌بعدی معتبر (.cube) نیست.	Bu geçerli bir 3B LUT (.cube) dosyası değil.
+خواندن LUT ناموفق بود: {0}	LUT okunamadı: {0}
+در حال افزودن پس‌زمینه…	Arka plan ekleniyor…
+افزودن پس‌زمینه ناموفق بود: {0}	Arka plan eklenemedi: {0}
+صدایی برای استخراج نیست	Çıkarılacak ses yok
+استخراج صدا برای ویدیوی بیشتر از ۱۵ دقیقه پشتیبانی نمی‌شود	15 dakikadan uzun videolarda ses çıkarma desteklenmiyor
+در حال استخراج صدای ویدیو…	Videonun sesi çıkarılıyor…
+صدای ویدیو 	Video sesi 
+صدای ویدیو به یک کلیپ صوتی تبدیل شد؛ صدای اصلی خاموش شد	Videonun sesi ses klibine dönüştü; orijinal ses kapatıldı
+استخراج صدا ناموفق بود: {0}	Ses çıkarma başarısız: {0}
+در حال حذف نویز صدا… (چند ثانیه صبر کن)	Gürültü azaltılıyor… (birkaç saniye bekle)
+حذف نویز انجام شد	Gürültü azaltma tamamlandı
+حذف نویز	Gürültü azaltma
+همه‌ی باندها صفر است؛ چیزی تغییر نمی‌کند.	Tüm bantlar sıfır; hiçbir şey değişmez.
+در حال اعمال اکولایزر…	Ekolayzer uygulanıyor…
+اکولایزر اعمال شد	Ekolayzer uygulandı
+اکولایزر	Ekolayzer
+فایل صوتی بیشتر از ۱۵ دقیقه است؛ برای {0} اول آن را کوتاه کن.	Ses dosyası 15 dakikadan uzun; {0} için önce kısalt.
+{1} ناموفق بود: {0}	{1} başarısız: {0}
+شکل موج این صدا هنوز ساخته نشده؛ چند ثانیه بعد دوباره امتحان کن	Bu sesin dalga formu henüz oluşturulmadı; birkaç saniye sonra tekrar dene
+سکوت قابل‌حذفی پیدا نشد	Silinebilir sessizlik bulunamadı
+سکوت حذف شد (حدود {0} ثانیه کوتاه‌تر)	Sessizlik silindi (yaklaşık {0} saniye kısaldı)
+در حال افزودن رسانه…	Medya ekleniyor…
+افزودن رسانه ناموفق بود: {0}	Medya eklenemedi: {0}
+فایل این کلیپ پیدا نشد	Bu klibin dosyası bulunamadı
+این کلیپ عکسه؛ فریم ثابت فقط برای ویدیو است	Bu klip bir fotoğraf; kare dondurma yalnızca video içindir
+در حال ساخت فریم ثابت…	Dondurulmuş kare oluşturuluyor…
+ساخت فریم ثابت ناموفق بود: {0}	Dondurulmuş kare oluşturulamadı: {0}
+فریم خوانده نشد	Kare okunamadı
+پروژه باز نشد؛ فایل پروژه یا ویدیوی آن پیدا نشد.	Proje açılamadı; proje dosyası veya videosu bulunamadı.
+قالب «{0}» اعمال شد	«{0}» şablonu uygulandı
+؛ متن عنوان را در تب لایه‌ها عوض کن	; başlık metnini Katmanlar sekmesinde değiştir
+حداکثر ۱۲ قالب شخصی؛ اول یکی را حذف کن	En fazla 12 kişisel şablon; önce birini sil
+قالب من 	Şablonum 
+«{0}» ذخیره شد	«{0}» kaydedildi
+ (با متن انتخاب‌شده)	 (seçili metinle)
+ (بدون متن؛ برای ذخیره‌ی متن اول یک لایه‌ی متن را انتخاب کن)	 (metinsiz; metni kaydetmek için önce bir metin katmanı seç)
+در حال آماده‌سازی ویدیو…	Video hazırlanıyor…
+ویدیو از حافظه‌ی گوشی خونده نشد ({0}). اگه ویدیو توی گوگل‌فوتوز یا گالری ابری بود، اول توی حافظه‌ی گوشی ذخیره‌ش کن و دوباره انتخابش کن.	Video telefon belleğinden okunamadı ({0}). Google Fotoğraflar'da veya bulut galerisindeyse önce telefona kaydet ve yeniden seç.
+این ویدیو باز نشد: {0}	Bu video açılamadı: {0}
+در حال ساخت پروژه…	Proje oluşturuluyor…
+مسیر فایل نامعتبر	Geçersiz dosya yolu
+ساخت پروژه ناموفق بود: {0}	Proje oluşturulamadı: {0}
+فایل باز نشد	Dosya açılamadı
+۳۰ ثانیه هیچ داده‌ای نیومد	30 saniye boyunca veri gelmedi
+فایل ناقص کپی شد	Eksik bir dosya kopyalandı
+ذخیره‌ی فایل نشد	Dosya kaydedilemedi
+اطلاعات ویدیو ناقصه	Video bilgisi eksik
+در حال دانلود مدل ({0} مگابایت)…	Model indiriliyor ({0} MB)…
+دانلود مدل نشد ({0}). اگه سایت فیلتره، فایل مدل رو جداگانه بگیر و با «وارد کردن فایل» انتخاب کن.	Model indirilemedi ({0}). Site engelliyse model dosyasını ayrıca al ve «Dosya içe aktar» ile seç.
+در حال وارد کردن مدل…	Model içe aktarılıyor…
+وارد کردن مدل نشد: {0}	Model içe aktarılamadı: {0}
+در حال خواندن صدا…	Ses okunuyor…
+در حال اتصال به سرویس آنلاین…	Çevrimiçi servise bağlanılıyor…
+صدا خوانده شد ({0} ثانیه). در حال فرستادن به سرویس آنلاین…	Ses okundu ({0} saniye). Çevrimiçi servise gönderiliyor…
+صدا خوانده شد ({0} ثانیه). در حال تشخیص گفتار…	Ses okundu ({0} saniye). Konuşma tanınıyor…
+تکه {0} جواب نداد؛ تلاش دوباره ({1} از {2})… 	{0}. parça yanıt vermedi; yeniden deneniyor ({1}/{2})… 
+تشخیص گفتار آنلاین… ({1} از {0})	Çevrimiçi konuşma tanıma… ({1}/{0})
+پاسخی نیامد	Yanıt gelmedi
+اینترنت قطعه یا آدرس سرویس پیدا نشد	İnternet yok veya servis adresi bulunamadı
+سرویس دیر جواب داد	Servis çok geç yanıt verdi
+اتصال به سرویس برقرار نشد	Servise bağlantı kurulamadı
+سرویس آنلاین بدون فیلترشکن باز نمی‌شه. فیلترشکن رو روشن کن و «تلاش دوباره» رو بزن؛ یا مدل آفلاین رو فقط یک بار دانلود کن (معمولاً بدون فیلترشکن دانلود می‌شه).	Çevrimiçi servis VPN olmadan açılmıyor. VPN'i aç ve «Tekrar dene»ye dokun; veya çevrimdışı modeli yalnızca bir kez indir (genellikle VPN'siz iner).
+تشخیص آنلاین انجام نشد	Çevrimiçi tanıma başarısız
+. فیلترشکن رو چک کن و دوباره امتحان کن، یا مدل آفلاین رو دانلود کن.	. VPN'ini kontrol edip tekrar dene veya çevrimdışı modeli indir.
+پردازنده‌ی این گوشی قدیمی است و از نسخه‌ی سریع تشخیص گفتار پشتیبانی نمی‌کند.	Bu telefonun işlemcisi eski ve hızlı konuşma tanıma sürümünü desteklemiyor.
+در حال آماده‌سازی مدل (فقط بار اول، چند ثانیه)…	Model hazırlanıyor (yalnızca ilk sefer, birkaç saniye)…
+مدل بارگذاری نشد. فایل مدل خراب یا ناقصه.	Model yüklenemedi. Model dosyası bozuk veya eksik.
+ · حدود {0} دقیقه مانده	 · yaklaşık {0} dakika kaldı
+در حال تشخیص گفتار… ({0} از {1}){2}	Konuşma tanınıyor… ({0}/{1}){2}
+از حافظه (تشخیص دوباره انجام نشد)	Bellekten (yeniden tanıma yapılmadı)
+{0} · {1} تکه · کل {2} ثانیه · هر تکه {3} ثانیه	{0} · {1} parça · toplam {2} saniye · parça başına {3} saniye
+ · اصلاح املا: {0} از {1} تکه	 · yazım düzeltme: {1} parçadan {0}
+ · {0} کلمه تا ثانیه {1} از {2}	 · {2} saniyeden {1}. saniyeye kadar {0} kelime
+هیچ گفتاری تشخیص داده نشد (تعداد خام: {0}). مدل بزرگ‌تر (base یا small) را امتحان کن یا ویدیویی با صدای واضح‌تر بده.	Hiç konuşma algılanmadı (ham sayı: {0}). Daha büyük bir model (base veya small) dene ya da sesi daha net bir video kullan.
+خطای ناشناخته	Bilinmeyen hata
+همه‌ی زیرنویس‌ها از این کوتاه‌ترند	Tüm altyazılar bundan kısa
+زیرنویس‌ها به بخش‌های کوتاه تقسیم شد	Altyazılar kısa bölümlere ayrıldı
+در حال تست… (تا ۱ دقیقه)	Test ediliyor… (en fazla 1 dakika)
+آپلود {0}KB: رسید (کد {2}) · {1}ms	{0}KB yükleme: ulaştı (kod {2}) · {1}ms
+آپلود {0}KB: قطع شد ← {1}: {2} · {3}ms	{0}KB yükleme: kesildi ← {1}: {2} · {3}ms
+آدرس: {0}	Adres: {0}
+DNS درسته: {0} · {1}ms	DNS sağlam: {0} · {1}ms
+DNS خراب: {0}	DNS bozuk: {0}
+اتصال ساده: باز شد (کد {0}) · {1}ms	Basit bağlantı: açıldı (kod {0}) · {1}ms
+اتصال ساده: نشد ← {0}: {1}	Basit bağlantı: başarısız ← {0}: {1}
+کلیپ فشرده ۳ثانیه‌ای ({0}KB): کد {2} · {1}ms	Sıkıştırılmış 3 saniyelik klip ({0}KB): kod {2} · {1}ms
+پاسخ: 	Yanıt: 
+کلیپ فشرده: قطع شد ← {0}: {1}	Sıkıştırılmış klip: kesildi ← {0}: {1}
+— مقایسه: همین آپلود به یه سایت دیگه (cloudflare.com) —	— Karşılaştırma: aynı yükleme başka bir siteye (cloudflare.com) —
+نتیجه: آپلود به سرویس سالمه. مشکل از چیز دیگه‌ایه؛ این متن رو برام بفرست.	Sonuç: servise yükleme çalışıyor. Sorun başka bir şeyde; bu metni bana gönder.
+نتیجه: حتی آپلود کوچیک هم قطع می‌شه؛ آدرس سرویس از این اینترنت بسته‌ست.	Sonuç: küçük yükleme bile kesiliyor; servis adresi bu internette kapalı.
+نتیجه: آپلودهای بزرگ‌تر از {0}KB به سرویس ما قطع می‌شن. برنامه صدا رو فشرده و تکه‌های کوچک می‌فرسته، ولی اگه باز هم قطع شد این متن رو برام بفرست.	Sonuç: servisimize {0}KB'tan büyük yüklemeler kesiliyor. Uygulama sesi sıkıştırıp küçük parçalar halinde gönderir, ama yine de kesilirse bu metni bana gönder.
+نتیجه: آپلود حجیم روی کل این اینترنت قطع می‌شه (از خود شبکه‌ست).	Sonuç: ağır yüklemeler bu internetin tamamında kesiliyor (sorun ağın kendisinde).
+رسانه‌ی یکی از کلیپ‌ها پیدا نشد. آن کلیپ را از تایم‌لاین حذف کن.	Kliplerden birinin medyası bulunamadı. O klibi zaman çizelgesinden sil.
+فایل عکس یکی از لایه‌ها پیدا نشد. آن لایه را از تب «لایه» حذف کن.	Katmanlardan birinin görsel dosyası bulunamadı. O katmanı «Katman» sekmesinden sil.
+عبارت‌ها {0} · کلمه‌ها {1} · بازه‌ها {2} · مجموع {3}ms از {4}ms · زیرنویس={5} · عمودی={6}	İfadeler {0} · kelimeler {1} · aralıklar {2} · toplam {3}ms / {4}ms · altyazı={5} · dikey={6}
+\nاولین عبارت: «{0}» از {1} تا {2}ms	\nİlk ifade: «{0}», {1} - {2}ms
+\nهیچ عبارتی وجود ندارد	\nHiç ifade yok
+در حال ساخت ویدیو…	Video oluşturuluyor…
+ویدیوی بدون گفتار	Konuşmasız video
+ذخیره ویدیو نشد: {0}	Video kaydedilemedi: {0}
+در حال میکس صدا…	Ses karıştırılıyor…
+در حال اعمال سرعت کلیپ‌ها…	Klip hızları uygulanıyor…
+میکس صدا ناموفق بود: {0}	Ses karıştırma başarısız: {0}
+دسترسی به گالری ممکن نشد	Galeriye erişilemedi
+صدایی برای پردازش پیدا نشد	İşlenecek ses bulunamadı
+این ویدیو صدا ندارد	Bu videoda ses yok
+خطای سرویس آنلاین ({0})	Çevrimiçi servis hatası ({0})
+اصلی	Orijinal
+زنده	Canlı
+گرم	Sıcak
+سرد	Soğuk
+سیاه‌وسفید	Siyah beyaz
+سینمایی	Sinematik
+قدیمی	Nostaljik
+محو	Soluk
+دراماتیک	Dramatik
+ملایم	Yumuşak
+خطا در ساخت ویدیو	Video oluşturulurken hata
+نسبی	Göreli
+مطلق	Mutlak
+اورلی صدا زده شد: {2} بار · فریم‌های دارای زیرنویس: {3} · زمان‌بندی: {4} · آخرین زمان: {0}ms · خطای رندر: {1}	Bindirme çağrıldı: {2} kez · altyazılı kareler: {3} · zamanlama: {4} · son zaman: {0}ms · işleme hatası: {1}
+فونت سیستم	Sistem yazı tipi
+بدون	Yok
+زوم	Yakınlaştır
+اسلاید	Kaydır
+چرخش	Döndür
+بلور	Bulanıklık
+گلیچ	Glitch
+آماده‌سازی مدل ناموفق بود	Model hazırlama başarısız
+ذخیره مدل ناموفق بود	Model kaydetme başarısız
+دانلود مدل نشد. اینترنت یا فیلترشکن را بررسی کن، یا فایل مدل را از «وارد کردن فایل مدل» بده.	Model indirilemedi. İnternetini veya VPN'ini kontrol et ya da model dosyasını «Model dosyasını içe aktar» ile ver.
+خطای سرور: {0}	Sunucu hatası: {0}
+طبق استایل	Stile göre
+پاپ	Pop
+اسلاید از پایین	Aşağıdan kayma
+پرش کلمه	Kelime zıplaması
+ضربتی	Vurucu
+تمیز	Temiz
+کادر	Kutu
+هایلایت	Vurgu
+ویلاگ	Vlog
+خبری	Haber
+نئون	Neon
+استعداد	Estedad
+ساحل	Sahel
+میخک	Mikhak
+سریع (ضعیف‌تر)	Hızlı (daha az doğru)
+متوسط	Orta
+دقیق (کندتر)	Doğru (daha yavaş)
+بهترین دقت (۵۷۰ مگابایت، خیلی کندتر)	En iyi doğruluk (570 MB, çok daha yavaş)
+حداکثر دقت (۱ گیگابایت، بسیار کند)	Maksimum doğruluk (1 GB, çok yavaş)
+آزاد 	Serbest 
+اندازه اصلی	Orijinal boyut
+ویدیو برای اعمال سرعت پیدا نشد	Hız uygulanacak video bulunamadı
+هیچ فریمی برای اعمال سرعت خوانده نشد	Hız uygulamak için hiçbir kare okunamadı
+پروژه بازیابی‌شده	Kurtarılan proje
+ (کپی)	 (kopya)
+پروژه {0}	Proje {0}
+صدای ویدیو	Video sesi
+ریلز و شورتس	Reels ve Shorts
+عمودی ۹:۱۶ · زیرنویس ضربتی · رنگ زنده	Dikey 9:16 · vurucu altyazı · canlı renk
+عنوان ویدیو	Video başlığı
+تیتر زرد	Sarı başlık
+یوتیوب	YouTube
+افقی ۱۶:۹ · زیرنویس کادر · نام پایین تصویر	Yatay 16:9 · kutulu altyazı · görüntünün altında isim
+نام شما	Adın
+جعبه تیره	Koyu kutu
+عریض ۲٫۳۵ · رنگ سینمایی · عنوان وسط	Geniş 2,35 · sinematik renk · ortada başlık
+عنوان فیلم	Film başlığı
+ساده	Sade
+پست مربعی	Kare gönderi
+۱:۱ · زیرنویس تمیز · رنگ ملایم	1:1 · temiz altyazı · yumuşak renk
+عنوان پست	Gönderi başlığı
+پست ۴:۵	Gönderi 4:5
+۴:۵ · هایلایت · رنگ گرم	4:5 · vurgu · sıcak renk
+برچسب قرمز	Kırmızı etiket
+طلایی	Altın
+استایل {0}	Stil {0}
+٪	%
+کروما کی فقط روی کلیپ‌های ویدیویی کار می‌کند. پلی‌هد را روی یک ویدیو ببر.	Chroma key yalnızca video kliplerinde çalışır. Oynatma imlecini bir videoya götür.
+کروما کی — کلیپ 	Chroma key — klip 
+ از 	 / 
+روشن	Açık
+خاموش	Kapalı
+خاموش‌کردن	Kapat
+روشن‌کردن	Aç
+۱. رنگ پرده را انتخاب کن (رنگ‌چکان)	1. Perde rengini seç (damlalık)
+در حال خواندن فریم…	Kare okunuyor…
+فریمی خوانده نشد	Hiçbir kare okunamadı
+رنگ انتخاب‌شده: 	Seçilen renk: 
+فریم جدید از پلی‌هد	İmleçten yeni kare
+روی یک جای صاف و بدون سایه‌ی پرده بزن؛ می‌شود انگشت را کشید.	Perdenin düz, gölgesiz bir yerine dokun; parmağını sürükleyebilirsin.
+سبز استاندارد	Standart yeşil
+آبی استاندارد	Standart mavi
+۲. تنظیم حذف رنگ	2. Renk kaldırma ayarı
+تلرانس رنگ (چقدر از رنگ‌های نزدیک حذف شود)	Renk toleransı (yakın renklerin ne kadarı kaldırılsın)
+نرمی لبه	Kenar yumuşaklığı
+حذف انعکاس رنگ پرده روی سوژه (Spill)	Perde renginin özneye yansımasını kaldır (Spill)
+۳. نتیجه روی همین فریم	3. Bu karedeki sonuç
+برای دیدن نتیجه، کروما را روشن کن یا رنگی انتخاب کن.	Sonucu görmek için chroma'yı aç veya bir renk seç.
+پیش‌نمایش زنده روی خود ویدیوی بالا هم دیده می‌شود.	Canlı önizleme yukarıdaki videoda da görünür.
+پیش‌نمایش زنده‌ی روی ویدیو به اندروید ۱۳ یا بالاتر نیاز دارد؛ در این گوشی نتیجه را همین‌جا و در خروجی می‌بینی.	Videoda canlı önizleme Android 13 veya üstünü gerektirir; bu telefonda sonucu burada ve dışa aktarmada görürsün.
+۴. پس‌زمینه پشت سوژه	4. Öznenin arkasındaki arka plan
+شفاف	Şeffaf
+رنگ ساده	Düz renk
+عکس	Görsel
+انتخاب عکس پس‌زمینه	Arka plan görseli seç
+تعویض عکس پس‌زمینه	Arka plan görselini değiştir
+ویدیوی MP4 شفافیت ندارد؛ پس در خروجی بخش «شفاف» با مشکی پر می‌شود. برای دیدن سوژه روی ویدیو/عکس دیگر، عکس پس‌زمینه را انتخاب کن.	MP4 video şeffaflığı desteklemez; bu yüzden dışa aktarmada «Şeffaf» siyahla doldurulur. Özneyi başka bir görselin üzerinde görmek için bir arka plan görseli seç.
+حذف کروما از این کلیپ	Bu kliptten chroma'yı kaldır
+کروما فقط روی همین کلیپ اعمال می‌شود. برای کلیپ‌های دیگر، پلی‌هد را ببر روی آن‌ها.	Chroma yalnızca bu klibe uygulanır. Diğer klipler için imleci onlara götür.
+کلیپ	Klip
+ویرایش کلیپ	Klibi düzenle
+کروما	Chroma
+کروما کی (پرده سبز)	Chroma key (yeşil perde)
+لایه	Katman
+لایه‌های متن و عکس	Metin ve görsel katmanları
+صدا و موسیقی	Ses ve müzik
+زیرنویس	Altyazı
+زیرنویس‌ها	Altyazılar
+استایل	Stil
+استایل زیرنویس	Altyazı stili
+فونت	Yazı tipi
+فونت زیرنویس	Altyazı yazı tipi
+جایگاه	Konum
+جایگاه و اندازه	Konum ve boyut
+فیلتر	Filtre
+فیلتر و رنگ	Filtre ve renk
+ادیت	Düzenle
+ویرایش خودکار	Otomatik düzenleme
+میکروفون باز نشد؛ شاید برنامه‌ی دیگری از آن استفاده می‌کند.	Mikrofon açılamadı; başka bir uygulama kullanıyor olabilir.
+برای ضبط صدا باید اجازه‌ی میکروفون را بدهی.	Ses kaydetmek için mikrofon iznini vermelisin.
+ویرایش	Düzenle
+در حال ذخیره…	Kaydediliyor…
+ذخیره شد	Kaydedildi
+ذخیره نشد	Kaydedilemedi
+خروجی	Dışa aktar
+ بخش	 bölüm
+خودکار	Otomatik
+عکس 	Fotoğraf 
+ویدیو 	Video 
+هنوز زیرنویسی ساخته نشده	Henüz altyazı oluşturulmadı
+قفل · 	Kilitli · 
+مخفی · 	Gizli · 
+با تشخیص گفتار، زیرنویس خودکار ساخته می‌شه. اگه نسازی، ویدیو بدون زیرنویس خروجی می‌گیره.	Altyazılar konuşma tanıma ile otomatik oluşturulur. Oluşturmazsan video altyazısız dışa aktarılır.
+ساخت زیرنویس خودکار	Otomatik altyazı oluştur
+تقسیم به بخش‌های کوتاه (حداکثر تعداد کلمه)	Kısa bölümlere ayır (en fazla kelime sayısı)
+زمان‌بندی	Zamanlama
+شروع −	Başlangıç −
+شروع +	Başlangıç +
+پایان −	Bitiş −
+پایان +	Bitiş +
+زمان هر کلمه (هایلایت در شروع کلمه می‌رسد)	Her kelimenin zamanı (vurgu kelimenin başında gelir)
+احتمال خطا:	Olası hata:
+اصلاح کلمه	Kelimeyi düzelt
+تأیید	Onayla
+لغو	İptal
+اگه اول یک کلمه در متن زیرنویس * بذاری، اون کلمه با رنگ تاکیدی نشون داده می‌شه.	Altyazı metninde bir kelimenin başına * koyarsan, o kelime vurgu renginde gösterilir.
+سلام	Merhaba
+دنیا	dünya
+بدون حروف فارسی	Farsça harf yok
+سلام دنیا	Merhaba dünya
+افزودن فونت (.ttf / .otf)	Yazı tipi ekle (.ttf / .otf)
+بالا چپ	Sol üst
+بالا وسط	Orta üst
+بالا راست	Sağ üst
+وسط چپ	Sol orta
+وسط	Orta
+وسط راست	Sağ orta
+پایین چپ	Sol alt
+پایین وسط	Orta alt
+پایین راست	Sağ alt
+اندازه	Boyut
+عرض متن	Metin genişliği
+جای عمودی	Dikey konum
+جای افقی	Yatay konum
+فاصله خطوط	Satır aralığı
+٫	,
+کلمه در هر خط	Satır başına kelime
+انیمیشن زیرنویس	Altyazı animasyonu
+از پایین	Aşağıdan
+از بالا	Yukarıdan
+از چپ	Soldan
+از راست	Sağdan
+به پایین	Aşağı
+به بالا	Yukarı
+به چپ	Sola
+به راست	Sağa
+ ث	 sn
+متن 	Metin 
+عکس جدید	Yeni görsel
+متن یا عکس اضافه کن؛ روی پیش‌نمایش با انگشت جابه‌جا و با دو انگشت بزرگ و بچرخانش.	Metin veya görsel ekle; önizlemede tek parmakla taşı, iki parmakla büyüt ve döndür.
+یک لایه را از بالا یا از روی تایم‌لاین (زیر زیرنویس‌ها) انتخاب کن.	Yukarıdan veya zaman çizelgesinden (altyazıların altından) bir katman seç.
+متن	Metin
+ تا 	 - 
+  ·  در این لحظه دیده نمی‌شود	  ·  bu anda görünmüyor
+قفل لایه	Katmanı kilitle
+جلوگیری از جابه‌جایی و ویرایش ناخواسته	İstenmeyen taşıma ve düzenlemeyi önler
+مخفی‌کردن لایه	Katmanı gizle
+روی تایم‌لاین می‌ماند، ولی در پیش‌نمایش و خروجی دیده نمی‌شود	Zaman çizelgesinde kalır ama önizlemede ve dışa aktarmada görünmez
+این لایه قفل است. برای ویرایش، اول قفل را بردار.	Bu katman kilitli. Düzenlemek için önce kilidi aç.
+برو به لایه	Katmana git
+استایل‌های آماده	Hazır stiller
+استایل‌های من	Stillerim
+ذخیره‌ی استایل این متن	Bu metnin stilini kaydet
+حذف «	Sil «
+رنگ متن	Metin rengi
+پس‌زمینه	Arka plan
+حاشیه‌ی تیره دور حروف	Harflerin çevresinde koyu kenarlık
+رنگ حاشیه	Kenarlık rengi
+سایه	Gölge
+قوی	Güçlü
+درخشش	Parıltı
+پررنگ (Bold)	Kalın (Bold)
+کج (Italic)	Eğik (Italic)
+تراز متن	Metin hizalama
+چپ	Sol
+راست	Sağ
+فاصله حروف	Harf aralığı
+فاصله حروف فقط برای حروف لاتین اثر دارد؛ در فارسی حروف را از هم جدا می‌کرد، پس نادیده گرفته می‌شود.	Harf aralığı yalnızca Latin harflerini etkiler; Farsçada harfleri birbirinden ayırdığı için yok sayılır.
+حذف پس‌زمینه‌ی رنگی (کروما کی)	Renkli arka planı kaldır (chroma key)
+سبز	Yeşil
+آبی	Mavi
+سفید	Beyaz
+سیاه	Siyah
+حساسیت	Hassasiyet
+روی عکس‌هایی که پس‌زمینه‌ی یک‌رنگ دارند (پرده‌ی سبز، پس‌زمینه‌ی سفید) کار می‌کنه. حساسیت رو تا جایی بالا ببر که پس‌زمینه برود و لبه‌ی سوژه سالم بماند. این ابزار فقط روی لایه‌ی عکس است، نه روی خود ویدیو.	Tek renk arka planlı görsellerde (yeşil perde, beyaz arka plan) çalışır. Arka plan gidene ve öznenin kenarı sağlam kalana kadar hassasiyeti yükselt. Bu araç yalnızca görsel katmanlarında çalışır, videonun kendisinde değil.
+۵۰٪	%50
+۱۰۰٪	%100
+۱۵۰٪	%150
+۲۰۰٪	%200
+چرخش ۹۰°	90° döndür
+بازنشانی لایه	Katmanı sıfırla
+شفافیت	Opaklık
+زمان شروع	Başlangıç zamanı
+مدت نمایش	Görüntülenme süresi
+کلیدفریم (موقعیت، اندازه، چرخش، شفافیت)	Anahtar kare (konum, boyut, dönüş, opaklık)
+کلید قبلی	Önceki anahtar
+به‌روزرسانی	Güncelle
+افزودن	Ekle
+حذف کلید	Anahtarı sil
+کلید بعدی	Sonraki anahtar
+حرکت از این کلید تا کلید بعدی	Bu anahtardan sonraki anahtara hareket
+نرم	Yumuşak
+خطی	Doğrusal
+ثابت (پله‌ای)	Sabit (basamaklı)
+کلید ۱۰۰ms زودتر	Anahtar 100ms erken
+کلید ۱۰۰ms دیرتر	Anahtar 100ms geç
+پاک‌کردن همه‌ی کلیدفریم‌ها (	Tüm anahtar kareleri temizle (
+پلی‌هد را روی یک لحظه بگذار و «افزودن» بزن؛ به لحظه‌ی دیگر برو و لایه را جابه‌جا یا کوچک و بزرگ کن (یا شفافیت را عوض کن) تا خودکار کلیدفریم ساخته شود. نوع حرکت بین کلیدها (نرم، خطی یا پله‌ای) را از همان کلید انتخاب می‌کنی. چرخش هم کلیدفریم می‌شود؛ روی کلیدهای دور از هم، چرخش از روی عددهای اسلایدر درون‌یابی می‌شود.	Oynatma imlecini bir ana koy ve «Ekle»ye dokun; başka bir ana git ve anahtar karenin otomatik oluşması için katmanı taşı, büyüt/küçült (veya opaklığı değiştir). Anahtarlar arasındaki hareket türünü (yumuşak, doğrusal veya basamaklı) o anahtardan seçersin. Dönüş de anahtar kare olur; birbirinden uzak anahtarlarda dönüş, kaydırıcı değerlerinden ara değerlenir.
+انیمیشن ورود	Giriş animasyonu
+انیمیشن خروج	Çıkış animasyonu
+مدت انیمیشن	Animasyon süresi
+شروع اینجا	Buradan başla
+پایان اینجا	Burada bitir
+تقسیم	Böl
+کپی	Kopyala
+بالاتر	Yukarı
+پایین‌تر	Aşağı
+حذف	Sil
+برای جابه‌جایی سریع، روی لایه‌ی تایم‌لاین چند لحظه نگه دار و افقی بکش. «بالاتر» لایه را روی لایه‌های دیگر می‌آورد؛ زیرنویس همیشه روی لایه‌هاست.	Hızlı taşıma için zaman çizelgesindeki katmana uzun bas ve yatay sürükle. «Yukarı» katmanı diğer katmanların üstüne getirir; altyazı her zaman katmanların üstündedir.
+صدای اصلی ویدیو	Videonun orijinal sesi
+بلندی صدای اصلی	Orijinal ses seviyesi
+کم‌کردن خودکار موسیقی هنگام صحبت	Konuşma sırasında müziği otomatik kıs
+زیر ویس (Voice Over) و زیر صحبت خود ویدیو (طبق زیرنویس‌ها)	Seslendirme (Voice Over) altında ve videonun kendi konuşması altında (altyazılara göre)
+در حال ضبط…  	Kaydediliyor…  
+توقف	Durdur
+ویدیو هنگام ضبط پخش می‌شود. برای اینکه صدای ویدیو داخل ضبط نیفتد از هدفون استفاده کن. با توقف پخش یا رسیدن به انتهای تایم‌لاین هم ضبط تمام می‌شود.	Kayıt sırasında video oynar. Videonun sesi kayda girmesin diye kulaklık kullan. Oynatmayı durdurunca veya zaman çizelgesinin sonuna gelince kayıt da biter.
+موسیقی یا فایل صوتی	Müzik veya ses dosyası
+ضبط صدا	Ses kaydet
+استخراج صدای ویدیو	Videonun sesini çıkar
+صدای ویدیو (با برش‌ها و سرعت‌های فعلی) به یک کلیپ صوتی تبدیل می‌شه و صدای اصلی خاموش می‌شه. بعدش می‌تونی حذف نویز، اکولایزر، بلندی و محو شدن رو روی اون اعمال کنی.	Videonun sesi (mevcut kesimler ve hızlarla) bir ses klibine dönüşür ve orijinal ses kapanır. Ardından gürültü azaltma, ekolayzer, ses seviyesi ve solma uygulayabilirsin.
+ضبط	Kaydet
+موسیقی یا صدا را از فایل اضافه کن، یا با «ضبط صدا» گویندگی بساز. هر صدا روی تایم‌لاین (زیر لایه‌ها) با شکل‌موج واقعی دیده می‌شود.	Dosyadan müzik veya ses ekle ya da «Ses kaydet» ile seslendirme yap. Her ses zaman çizelgesinde (katmanların altında) gerçek dalga formuyla görünür.
+یک صدا را از بالا یا از روی تایم‌لاین انتخاب کن.	Yukarıdan veya zaman çizelgesinden bir ses seç.
+موسیقی / صدا	Müzik / ses
+پخش این صدا	Bu sesi çal
+بی‌صدا	Sessiz
+بلندی صدا	Ses seviyesi
+محو شدن در شروع	Başta yavaş giriş
+محو شدن در پایان	Sonda solma
+حالت‌های محوشدن	Solma modları
+بدون محو	Solma yok
+محو شروع	Başlangıç girişi
+محو پایان	Bitiş solması
+شروع و پایان	Başlangıç ve bitiş
+زمان شروع روی تایم‌لاین	Zaman çizelgesinde başlangıç zamanı
+شروع از ثانیه‌ی…	Şu saniyeden başla…
+مدت پخش	Oynatma süresi
+برو به صدا	Sese git
+حذف نویز (مخصوص گفتار)	Gürültü azaltma (konuşma için)
+نویز پس‌زمینه از روی بخش‌های ساکت خود فایل اندازه‌گیری و کم می‌شود و صدای رامبل پایین حذف می‌شود. نتیجه یک فایل تازه است و با بازگشت (Undo) به صدای قبلی برمی‌گردی. برای موسیقی استفاده نکن.	Arka plan gürültüsü dosyanın kendi sessiz bölümlerinden ölçülür ve azaltılır, alçak gürültü de giderilir. Sonuç yeni bir dosyadır ve Geri Al ile önceki sese dönersin. Müzik için kullanma.
+حذف سکوت	Sessizliği sil
+فقط سکوت کامل	Yalnızca tam sessizlik
+شدید	Güçlü
+مکث‌های بیشتر از نیم‌ثانیه حذف می‌شوند و بخش‌ها به هم می‌چسبند. کلیپ به چند کلیپ پشت‌سرهم تقسیم می‌شود و کلیپ‌های دیگر جابه‌جا نمی‌شوند. برای صدایی که با تصویر هماهنگ است (مثل صدای استخراج‌شده) استفاده نکن، چون هماهنگی با تصویر به هم می‌خورد.	Yarım saniyeden uzun duraklamalar silinir ve parçalar birleştirilir. Klip arka arkaya birkaç klibe bölünür, diğer klipler yer değiştirmez. Görüntüyle senkron sesler (çıkarılmış ses gibi) için kullanma; görüntüyle senkron bozulur.
+اکولایزر ۵ باند	5 bantlı ekolayzer
+بم (۱۲۰ هرتز)	Bas (120 Hz)
+بم‌میانه (۳۵۰ هرتز)	Alt-orta (350 Hz)
+میانه (۱ کیلوهرتز)	Orta (1 kHz)
+زیر‌میانه (۳٫۵ کیلوهرتز)	Üst-orta (3,5 kHz)
+زیر (۶ کیلوهرتز)	Tiz (6 kHz)
+گفتار شفاف	Net konuşma
+بم قوی	Güçlü bas
+حذف صدای تو‌دماغی	Genizden gelen sesi gider
+صفر	Sıfır
+اعمال اکولایزر	Ekolayzeri uygula
+اکولایزر روی یک فایل تازه اعمال می‌شود (با Undo برمی‌گردد). برای اثر بیشتر می‌شود چند بار اعمال کرد؛ اگر صدا خش افتاد، مقدارها را کمتر کن.	Ekolayzer yeni bir dosyaya uygulanır (Geri Al ile döner). Daha güçlü etki için birkaç kez uygulanabilir; ses çirkinleşirse değerleri küçült.
+برای جابه‌جایی سریع، روی کلیپ صوتی در تایم‌لاین چند لحظه نگه دار و افقی بکش. بلندی هر صدا تا ۱۰۰٪ است و صداها هنگام خروجی با همین مقدارها میکس می‌شوند.	Hızlı taşıma için zaman çizelgesindeki ses klibine uzun bas ve yatay sürükle. Her sesin seviyesi %100'e kadardır ve sesler dışa aktarmada bu değerlerle karıştırılır.
+کلیپ 	Klip 
+ریپل (جابه‌جایی همراه برش)	Ripple (kesimle birlikte kayar)
+لایه‌ها و صدای بعد از تغییر، همراه کوتاه/بلند شدن کلیپ جابه‌جا می‌شوند؛ لایه‌ی قفل‌شده ثابت می‌ماند	Değişiklikten sonraki katmanlar ve ses, klibin kısalması/uzamasıyla birlikte kayar; kilitli katman sabit kalır
+ترنزیشن ورود کلیپ 	Klip giriş geçişi 
+ (محل برش قبلی)	 (önceki kesim noktası)
+پیش‌فرض پروژه	Proje varsayılanı
+مدت ترنزیشن این برش	Bu kesimin geçiş süresi
+ م‌ث	 ms
+افکت همین کلیپ 	Bu klibin efekti 
+روشنایی	Parlaklık
+کنتراست	Kontrast
+اشباع رنگ	Doygunluk
+گرمی / سردی	Sıcaklık / soğukluk
+شارپ	Keskinleştirme
+حالت‌های آماده برای این کلیپ	Bu klip için hazır görünümler
+اعمال روی همه‌ی کلیپ‌ها	Tüm kliplere uygula
+کپی به کلیپ بعدی	Sonraki kliple kopyala
+پاک‌کردن افکت این کلیپ	Bu klibin efektini temizle
+این افکت‌ها فقط روی همین کلیپ‌اند و روی فیلتر و افکت‌های تب «فیلتر» اضافه می‌شن. شارپ در پیش‌نمایش دیده نمی‌شه و فقط در خروجی اعمال می‌شه؛ بلور در پیش‌نمایش فقط روی اندروید ۱۲ به بالا است.	Bu efektler yalnızca bu kliptedir ve «Filtre» sekmesindeki filtre ve efektlerin üzerine eklenir. Keskinleştirme önizlemede görünmez, yalnızca dışa aktarmada uygulanır; önizlemede bulanıklık yalnızca Android 12 ve üzerinde çalışır.
+۱۰ فریم قبل	10 kare geri
+فریم قبل	Kare geri
+فریم بعد	Kare ileri
+۱۰ فریم بعد	10 kare ileri
+حذف قبل	Öncesini sil
+حذف بعد	Sonrasını sil
+حذف کلیپ	Klibi sil
+قبل‌تر	Daha erken
+بعدتر	Daha geç
+برش خودکار	Otomatik kesim
+ادغام برش‌ها	Kesimleri birleştir
+معکوس ترتیب	Sırayı ters çevir
+کپی کل تدوین	Tüm düzenlemeyi kopyala
+سرعت کلیپ — 	Klip hızı — 
+شتاب‌گیری	Hızlanma
+کندشدن	Yavaşlama
+اوج سرعت	Hız tepesi
+سرعت فقط روی کلیپ زیر پلی‌هد اعمال می‌شه. «شتاب‌گیری»، «کندشدن» و «اوج سرعت» کلیپ رو به ۴ تکه با سرعت‌های مختلف تقسیم می‌کنن و هر تکه جدا قابل ویرایشه. خروجی با سرعت کمی بیشتر طول می‌کشه.	Hız yalnızca imlecin altındaki klibe uygulanır. «Hızlanma», «Yavaşlama» ve «Hız tepesi» klibi farklı hızlarda 4 parçaya böler ve her parça ayrı düzenlenebilir. Dışa aktarma biraz daha uzun sürer.
+روی کلیپ عکس سرعت اعمال نمی‌شه.	Fotoğraf klibine hız uygulanmaz.
+انتخاب چند کلیپ	Birden çok klip seç
+همه	Tümü
+هیچ‌کدام	Hiçbiri
+برو به اولی	İlkine git
+جابه‌جایی انتخاب‌شده‌ها	Seçilenleri taşı
+به اول	Başa
+یکی جلوتر	Bir ileri
+یکی عقب‌تر	Bir geri
+به آخر	Sona
+سرعت انتخاب‌شده‌ها	Seçilenlerin hızı
+اعمال سرعت	Hızı uygula
+شماره‌ی کلیپ‌ها همان ترتیب تایم‌لاین است. کلیپ عکس سرعت نمی‌گیرد و رد می‌شود. همه‌ی تغییرات یک مرحله‌ی Undo هستند.	Klip numaraları zaman çizelgesi sırasıdır. Fotoğraf klibi hız almaz ve atlanır. Tüm değişiklikler tek bir Geri Al adımıdır.
+چرخش و زوم تصویر (همه‌ی ویدیوها)	Görüntü döndürme ve yakınlaştırma (tüm videolar)
+چرخش ۹۰° راست	90° sağa döndür
+چرخش ۹۰° چپ	90° sola döndür
+بازنشانی	Sıfırla
+قرینه افقی	Yatay çevir
+قرینه عمودی	Dikey çevir
+چرخش آزاد	Serbest döndürme
+زوم تصویر	Görüntü yakınlaştırma
+جابه‌جایی افقی	Yatay kaydırma
+جابه‌جایی عمودی	Dikey kaydırma
+شفافیت تصویر (محو به سیاه)	Görüntü opaklığı (siyaha solma)
+کی‌فریم زوم، جابه‌جایی، چرخش آزاد و شفافیت تصویر	Yakınlaştırma, kaydırma, serbest döndürme ve görüntü opaklığı için anahtar kareler
+ کی‌فریم	 anahtar kare
+کی‌فریم قبل	Önceki anahtar kare
+ثبت اینجا	Buraya kaydet
+کی‌فریم بعد	Sonraki anahtar kare
+حرکت از این کی‌فریم تا کی‌فریم بعد	Bu anahtar kareden sonrakine hareket
+کی‌فریم ۱۰۰ms زودتر	Anahtar kare 100ms erken
+کی‌فریم ۱۰۰ms دیرتر	Anahtar kare 100ms geç
+حذف این کی‌فریم	Bu anahtar kareyi sil
+پاک‌کردن همه‌ی کی‌فریم‌ها	Tüm anahtar kareleri temizle
+پلی‌هد را ببر، زوم/جابه‌جایی را تنظیم کن و «ثبت اینجا» را بزن (چرخش آزاد و شفافیت هم ثبت می‌شوند؛ با لغزنده‌ی شفافیت اولین کی‌فریم خودکار ساخته می‌شود)؛ در جای دیگر دوباره. بین کی‌فریم‌ها حرکت نرم است. با وجود کی‌فریم، لغزنده‌ها خودشان کی‌فریم می‌گذارند. کی‌فریم‌ها به زمان تایم‌لاین بسته‌اند و با برش کلیپ‌ها جابه‌جا نمی‌شوند.	İmleci götür, yakınlaştırma/kaydırmayı ayarla ve «Buraya kaydet»e dokun (serbest döndürme ve opaklık da kaydedilir; opaklık kaydırıcısını oynatmak ilk anahtar kareyi otomatik oluşturur); başka bir yerde tekrar yap. Anahtar kareler arasındaki hareket yumuşaktır. Anahtar kare varken kaydırıcılar kendileri anahtar koyar. Anahtar kareler zaman çizelgesi zamanına bağlıdır ve klipler kesilince kaymaz.
+فریم ثابت (Freeze) — مدت	Kare dondurma (Freeze) — süre
+ ثانیه	 saniye
+ثابت‌کردن فریم زیر پلی‌هد	İmlecin altındaki kareyi dondur
+افزودن ویدیو یا عکس در پلی‌هد	İmlece video veya fotoğraf ekle
+برش دستی فعاله. دستگیره‌های دو سر کلیپ را بکش تا ابتدا یا انتهای همان کلیپ کوتاه شود. با «برش خودکار» دوباره به حذف خودکار سکوت‌ها برمی‌گردی.	Elle kesim açık. Klibin başını veya sonunu kısaltmak için iki uçtaki tutamaçları sürükle. «Otomatik kesim» ile otomatik sessizlik silmeye dönersin.
+با اولین تغییر، برش فعلی (با حذف سکوت‌ها) به کلیپ‌های قابل ویرایش تبدیل می‌شه. پلی‌هد رو روی نقطه‌ی دلخواه بذار و ابزار رو بزن.	İlk değişiklikle mevcut kesim (sessizlikler silinmiş halde) düzenlenebilir kliplere dönüşür. İmleci istediğin noktaya koy ve aracı kullan.
+مدت اصلی	Orijinal süre
+بعد از ادیت	Düzenlemeden sonra
+خروجی SRT	SRT dışa aktar
+ورود SRT	SRT içe aktar
+تشخیص صحنه و برش	Sahne algılama ve kesme
+پاک‌سازی فایل‌ها	Dosyaları temizle
+SRT با زمان ویدیوی ادیت‌شده ساخته و خوانده می‌شود. «پاک‌سازی» تاریخچه‌ی Undo را پاک می‌کند.	SRT, düzenlenmiş videonun zamanlamasıyla oluşturulur ve okunur. «Temizle» Geri Al geçmişini siler.
+تنظیمات برنامه (مدل گفتار، زبان…)	Uygulama ayarları (konuşma modeli, dil…)
+نمایش زیرنویس روی ویدیو	Altyazıyı videoda göster
+حذف سکوت‌ها	Sessizlikleri sil
+بخش‌های بی‌صدا برش می‌خورن	Sessiz bölümler kesilir
+زوم ریتمی	Ritmik yakınlaştırma
+حرکت ملایم روی برش‌ها	Kesimlerde hafif hareket
+نسبت تصویر خروجی	Çıktı en-boy oranı
+آزاد	Serbest
+نسبت آزاد (عرض ÷ ارتفاع)	Serbest oran (genişlik ÷ yükseklik)
+قالب‌های آماده	Hazır şablonlar
+قالب‌های من	Şablonlarım
+ذخیره‌ی تنظیمات فعلی	Mevcut ayarları kaydet
+هر قالب نسبت تصویر، استایل زیرنویس، فیلتر رنگ و یک متن عنوان می‌گذارد. بعد از اعمال همه‌چیز قابل تغییر است و کل قالب با یک Undo برمی‌گردد.	Her şablon en-boy oranını, altyazı stilini, renk filtresini ve bir başlık metnini ayarlar. Uygulandıktan sonra her şey değiştirilebilir ve tüm şablon tek Geri Al ile geri alınır.
+شدت فیلتر	Filtre şiddeti
+سبز / سرخ	Yeşil / macenta
+نوردهی	Pozlama
+تغییر رنگ‌مایه	Ton kaydırma
+سفیدی‌ها	Beyazlar
+سیاهی‌ها	Siyahlar
+افکت‌های تصویر	Görüntü efektleri
+وینیت	Vinyet
+دانه‌ی فیلم	Film greni
+نوار سینمایی	Sinema çubukları
+نشت نور	Işık sızıntısı
+تیزی	Keskinlik
+جدایی RGB	RGB ayrımı
+نویز	Gürültü
+هایلایت‌ها	Vurgular
+سایه‌ها	Gölgeler
+بلور در پیش‌نمایش فقط روی اندروید ۱۲ به بالا دیده می‌شود. تیزی، جدایی RGB، گلیچ، نویز، درخشش و هایلایت/سایه فقط در ویدیوی خروجی اعمال می‌شوند.	Önizlemede bulanıklık yalnızca Android 12 ve üzerinde görünür. Keskinlik, RGB ayrımı, glitch, gürültü, parıltı ve vurgu/gölge yalnızca dışa aktarılan videoda uygulanır.
+ترنزیشن در محل برش‌ها	Kesimlerde geçiş
+مدت ترنزیشن	Geçiş süresi
+پایان هر کلیپ خارج و ابتدای کلیپ بعدی وارد می‌شود (ترکیب هم‌زمان دو کلیپ نیست). فقط وقتی بیش از یک کلیپ داری دیده می‌شود.	Her klibin sonu çıkar ve sonraki klibin başı girer (iki klibin aynı anda karışması değil). Yalnızca birden fazla klibin varken görünür.
+LUT رنگ (فایل .cube)	Renk LUT (.cube dosyası)
+انتخاب فایل LUT	LUT dosyası seç
+تعویض فایل LUT	LUT dosyasını değiştir
+شدت LUT	LUT şiddeti
+حذف LUT	LUT'u kaldır
+پیش‌نمایش فقط تقریبی است (یک ماتریس رنگ مشابه LUT)؛ ویدیوی خروجی با خود LUT دقیق ساخته می‌شود.	Önizleme yalnızca yaklaşıktır (LUT'a benzer bir renk matrisi); dışa aktarılan video gerçek LUT ile oluşturulur.
+برگرداندن همه به حالت اصلی	Her şeyi orijinale döndür
+خروجی ویدیو	Video dışa aktar
+گزینه‌ها رو بررسی کن و ویدیو رو بساز.	Seçenekleri kontrol et ve videoyu oluştur.
+قالب	Biçim
+مدت نهایی	Son süre
+ندارد	Yok
+کیفیت خروجی	Çıktı kalitesi
+اندازه‌ی تصویر	Görüntü boyutu
+۴K (پرمصرف)	4K (ağır)
+نرخ فریم	Kare hızı
+مثل ویدیو	Video gibi
+کدک	Kodek
+H.264 (سازگارتر)	H.264 (daha uyumlu)
+HEVC (حجم کمتر)	HEVC (daha küçük boyut)
+نرخ بیت ویدیو	Video bit hızı
+خروجی: 	Çıktı: 
+ · حجم تقریبی 	 · yaklaşık boyut 
+ · نرخ خودکار 	 · otomatik bit hızı 
+ · صدا ثابت ۱۲۸ kbps	 · ses sabit 128 kbps
+انکودر این گوشی: H.264 تا 	Bu telefonun kodlayıcısı: H.264, en fazla 
+ پیکسل	 piksel
+ (سخت‌افزاری)	 (donanım)
+ (نرم‌افزاری، کند)	 (yazılım, yavaş)
+سخت‌افزاری	Donanım
+فقط نرم‌افزاری	Yalnızca yazılım
+ · HEVC ندارد	 · HEVC yok
+۴K حافظه و زمان زیادی می‌خواهد؛ اگر خروجی شکست خورد، برنامه خودش با کیفیت کمتر دوباره تلاش می‌کند.	4K çok bellek ve zaman ister; dışa aktarma başarısız olursa uygulama kendiliğinden daha düşük kaliteyle yeniden dener.
+فضای خالی کافی نیست: برای این تنظیمات حدود 	Yeterli boş alan yok: bu ayarlar için yaklaşık 
+ مگابایت لازم است ولی 	 MB gerekli ama yalnızca 
+ مگابایت خالی است. نرخ بیت یا اندازه را کمتر کن.	 MB boş. Bit hızını veya boyutu düşür.
+هنوز زیرنویسی ساخته نشده؛ ویدیو بدون زیرنویس ساخته می‌شه.	Henüz altyazı oluşturulmadı; video altyazısız oluşturulacak.
+از 	Şundan: 
+ به 	 şuna: 
+ کوتاه شد.	 kısaltıldı.
+ساخت ویدیو	Video oluştur
+زیرکات	ZarCut
+استودیوی ادیت ویدیو	Video düzenleme stüdyosu
+پروژه جدید	Yeni proje
+ویدیو رو وارد کن و ادیت رو شروع کن	Bir video içe aktar ve düzenlemeye başla
+ادامه ویرایش	Düzenlemeye devam et
+آخرین ویرایش 	Son düzenleme 
+ادامه	Devam
+پروژه‌ها	Projeler
+ پروژه	 proje
+جستجوی پروژه	Proje ara
+هنوز پروژه‌ای نداری	Henüz projen yok
+با «پروژه جدید» یک ویدیو وارد کن؛ پروژه خودکار ذخیره می‌شه.	«Yeni proje» ile bir video içe aktar; proje otomatik kaydedilir.
+پروژه‌ای با این نام پیدا نشد.	Bu adda bir proje bulunamadı.
+ویدیوهای ساخته‌شده	Oluşturulan videolar
+همین الان	Az önce
+ دقیقه پیش	 dakika önce
+ ساعت پیش	 saat önce
+ روز پیش	 gün önce
+تنظیمات اولیه رو انتخاب کن، بعد ویدیو رو وارد کن.	Başlangıç ayarlarını seç, sonra videoyu içe aktar.
+زبان گفتار	Konuşma dili
+فارسی	Farsça
+انتخاب ویدیو	Video seç
+تغییر نام	Yeniden adlandır
+ساخت نسخه‌ی کپی	Kopya oluştur
+حذف پروژه	Projeyi sil
+نام پروژه	Proje adı
+حذف «{0}»؟	«{0}» silinsin mi?
+پروژه و نسخه‌ی ویدیوی داخل برنامه پاک می‌شه. ویدیوی اصلی توی گالری دست نمی‌خوره.	Proje ve uygulama içindeki video kopyası silinir. Galerideki orijinal videoya dokunulmaz.
+بنفش‌آبی	Mor-mavi
+شب آبی	Gece mavisi
+گرافیتی	Grafit
+جنگل	Orman
+اقیانوس	Okyanus
+قرمز	Kırmızı
+ارسال صدا به سرور؟	Ses sunucuya gönderilsin mi?
+برای ساخت زیرنویس بدون دانلود مدل، صدای ویدیو (نه تصویر) برای تشخیص گفتار به سرور آنلاین ZirCut فرستاده می‌شود. 	Model indirmeden altyazı oluşturmak için videonun sesi (görüntüsü değil) konuşma tanıma amacıyla çevrimiçi ZirCut sunucusuna gönderilir. 
+اگر نمی‌خواهی، مدل را روی گوشی دانلود کن تا همه‌چیز روی خود گوشی بماند. می‌توانی بعداً این اجازه را پس بگیری.	İstemiyorsan modeli telefona indir; böylece her şey telefonda kalır. Bu izni daha sonra geri alabilirsin.
+اجازه می‌دهم	İzin veriyorum
+نه، مدل روی گوشی	Hayır, model telefonda
+به یک مدل تشخیص گفتار نیاز داریم	Bir konuşma tanıma modeline ihtiyacımız var
+فقط بار اول دانلود می‌شه و بعدش همه‌چیز آفلاین کار می‌کنه.	Yalnızca ilk sefer indirilir, sonrasında her şey çevrimdışı çalışır.
+تلاش دوباره (بعد از روشن کردن فیلترشکن)	Tekrar dene (VPN'i açtıktan sonra)
+اندازه مدل	Model boyutu
+دانلود مدل (	Modeli indir (
+ مگابایت)	 MB)
+وارد کردن فایل مدل (.bin)	Model dosyasını içe aktar (.bin)
+پس گرفتن اجازه‌ی ارسال صدا به سرور	Sunucuya ses gönderme iznini geri al
+تست اتصال (پیدا کردن مشکل)	Bağlantı testi (sorunu bul)
+بازگشت به ادیتور	Düzenleyiciye dön
+در حال پردازش…	İşleniyor…
+صفحه رو روشن نگه دار. ممکنه چند دقیقه طول بکشه.	Ekranı açık tut. Birkaç dakika sürebilir.
+تا تموم شدن، استایل زیرنویس رو انتخاب کن	Bitene kadar altyazı stilini seç
+ویدیو آماده شد	Video hazır
+توی گالری (Movies/ZirCut) ذخیره شد.	Galeriye kaydedildi (Movies/ZirCut).
+اشتراک‌گذاری	Paylaş
+ویرایش دوباره	Tekrar düzenle
+برگشت به خانه	Ana sayfaya dön
+یه مشکلی پیش اومد	Bir sorun oluştu
+گوشی تنظیمات ساخت ویدیو رو قبول نکرد. دوباره امتحان کن؛ برنامه خودش کیفیت رو پایین‌تر می‌آره.	Telefon video dışa aktarma ayarlarını kabul etmedi. Tekrar dene; uygulama kaliteyi kendiliğinden düşürür.
+مدل	Model
+مدل تشخیص گفتار آماده نیست. اینترنت رو چک کن و دوباره امتحان کن.	Konuşma tanıma modeli hazır değil. İnternetini kontrol edip tekrar dene.
+برگشت	Geri
+تنظیمات	Ayarlar
+زبان ویدیو	Video dili
+مدل تشخیص گفتار	Konuşma tanıma modeli
+دقت بیشتر (کندتر)	Daha yüksek doğruluk (daha yavaş)
+خاموش = جستجوی سریع (پیش‌فرض). روشن = جستجوی دقیق‌تر ولی کندتر.	Kapalı = hızlı arama (varsayılan). Açık = daha doğru ama yavaş arama.
+تشخیص آنلاین	Çevrimiçi tanıma
+اگر آدرس سرویس آنلاین پر باشد، صدا برای تشخیص فرستاده می‌شود و هیچ مدلی دانلود نمی‌شود. اگر خطا بدهد، مدل روی گوشی استفاده می‌شود.	Çevrimiçi servis adresi doluysa ses tanıma için gönderilir ve hiçbir model indirilmez. Hata verirse telefondaki model kullanılır.
+آدرس سرویس آنلاین	Çevrimiçi servis adresi
+زبان برنامه	Uygulama dili
+در حال تحلیل صدا…	Ses analiz ediliyor…
+زیرنویس را از یک فایل SRT وارد کن. اگه وارد نکنی، ویدیو بدون زیرنویس خروجی می‌گیره.	Altyazıyı bir SRT dosyasından içe aktar. Aktarmazsan video altyazısız dışa aktarılır.
+تنظیمات برنامه (زبان…)	Uygulama ayarları (dil…)
+بخش‌های بی‌صدا از روی تحلیل صدا برش می‌خورن	Sessiz bölümler ses analizine göre kesilir
+روش حذف پس‌زمینه	Arka plan kaldırma yöntemi
+رنگ پرده (کروما)	Renkli perde (chroma key)
+هوش مصنوعی (حذف پس‌زمینه سوژه)	Yapay zekâ (özne arka planını kaldır)
+هوش مصنوعی سوژه‌ی اصلی (آدم) را جدا می‌کند و بقیه را با پس‌زمینه‌ی انتخابی عوض می‌کند. کاملاً روی گوشی و بدون اینترنت کار می‌کند.	Yapay zekâ ana özneyi (kişiyi) ayırır ve geri kalanı seçtiğin arka planla değiştirir. Tamamen telefonda, internetsiz çalışır.
+برعکس‌کردن انتخاب (پس‌زمینه بماند، سوژه برود)	Seçimi ters çevir (arka plan kalsın, özne gitsin)
+نرمی لبه‌ی سوژه	Özne kenar yumuşaklığı
+مدل هوش مصنوعی اجرا نشد: {0}	Yapay zekâ modeli çalışmadı: {0}
+پیش‌نمایش زنده روی ویدیو در حالت هوش مصنوعی هنوز نیست؛ نتیجه را همین‌جا و در خروجی می‌بینی. خروجی با هوش مصنوعی کندتر است.	Yapay zekâ modunda videoda canlı önizleme henüz yok; sonucu burada ve dışa aktarımda görürsün. Yapay zekâlı dışa aktarım daha yavaştır.
+مدل هوش مصنوعی داخل برنامه باز نشد: {0}	Uygulamanın içindeki yapay zekâ modeli açılamadı: {0}
+مدل هوش مصنوعی روی این گوشی بارگذاری نشد. برنامه را ببند و دوباره امتحان کن.	Yapay zeka modeli bu telefonda yüklenemedi. Uygulamayı kapatıp tekrar dene.

@@ -1,0 +1,12 @@
+package app.zircut.core
+
+object Config {
+    /** Speech models are mirrored on this repo's GitHub release (see the "Mirror models" workflow). */
+    const val MODEL_BASE_URL = "https://github.com/sajadrs180-eng/zircut/releases/download/models-v1"
+
+    /** Address of the ZirCut online recognition service (Cloudflare Worker). Users need no key. */
+    const val WORKER_URL = "https://zircut.sajadrs1818.workers.dev"
+
+    /** More Worker addresses (one per Cloudflare account). Add them here; the app moves to the next when one fails. */
+    val WORKER_EXTRA: List<String> = listOf()
+}

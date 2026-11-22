@@ -1,0 +1,21 @@
+package app.zircut.core
+
+class WhisperBridge {
+    external fun loadModel(modelPath: String): Long
+    external fun release(ctx: Long)
+    external fun transcribe(ctx: Long, audio: FloatArray, lang: String, threads: Int, beam: Int): Array<String>
+
+    companion object {
+        /** The fast native build needs dot-product and fp16 instructions (most phones since 2018). */
+        fun cpuSupportsFast(): Boolean = try {
+            val t = java.io.File("/proc/cpuinfo").readText()
+            t.contains("asimddp") && (t.contains("fphp") || t.contains("asimdhp"))
+        } catch (e: Exception) {
+            true
+        }
+
+        init {
+            System.loadLibrary("zircut_whisper")
+        }
+    }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>ZirCut app icon</title>
+  <rect width="1024" height="1024" fill="#0B0D2A"/>
+  <path d="M320,262 H704 A90,90 0 0 1 794,352 V502 A90,90 0 0 1 704,592 H320 A90,90 0 0 1 230,502 V352 A90,90 0 0 1 320,262 Z" fill="none" stroke="#9147FF" stroke-width="34"/>
+  <path d="M455,332 L595,427 L455,522 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="24" stroke-linejoin="round"/>
+  <path d="M291,640 H733 A75,75 0 0 1 808,715 A75,75 0 0 1 733,790 H291 A75,75 0 0 1 216,715 A75,75 0 0 1 291,640 Z" fill="#FFFFFF"/>
+  <path d="M287,690 H367 A25,25 0 0 1 367,740 H287 A25,25 0 0 1 287,690 Z" fill="#D5D8F0"/>
+  <path d="M657,690 H737 A25,25 0 0 1 737,740 H657 A25,25 0 0 1 657,690 Z" fill="#D5D8F0"/>
+  <path d="M447,680 H577 A35,35 0 0 1 577,750 H447 A35,35 0 0 1 447,680 Z" fill="#1F6BFF"/>
+  <line x1="880" y1="180" x2="304" y2="820" stroke="#0B0D2A" stroke-width="52" stroke-linecap="round"/>
+  <line x1="880" y1="180" x2="304" y2="820" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round"/>
+</svg>

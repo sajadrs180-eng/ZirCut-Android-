@@ -1,0 +1,35 @@
+name: Build APK
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source check (the build must come from the files in this repo only)
+        run: |
+          # fix238: older workflows unpacked fix*.zip files over the tree. That silently skipped ZirCut-fix*.zip
+          # and left deleted files (Whisper) in place. The repo now holds ONE flat source tree.
+          if ls ./*.zip >/dev/null 2>&1; then echo "ERROR: remove the .zip files from the repo root"; ls ./*.zip; exit 1; fi
+          test ! -d app/src/main/cpp || { echo "ERROR: app/src/main/cpp must not exist (Whisper was removed in fix235)"; exit 1; }
+          ls app/src/main/assets/i18n
+          grep -E 'versionCode|versionName' app/build.gradle.kts
+          echo "commit: $GITHUB_SHA"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+      - name: Build release APK
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+      - name: Show APK size
+        run: ls -l app/build/outputs/apk/release/ && du -h app/build/outputs/apk/release/*.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZirCut-APK-${{ github.run_number }}-${{ github.sha }}
+          path: app/build/outputs/apk/release/*.apk

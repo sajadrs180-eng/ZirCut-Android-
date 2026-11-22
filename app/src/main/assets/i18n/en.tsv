@@ -1,0 +1,681 @@
+متن جدید	New text
+در حال افزودن عکس…	Adding photo…
+افزودن عکس ناموفق بود: {0}	Couldn't add the photo: {0}
+فایل خوانده نشد	The file couldn't be read
+تصویر نامعتبر است	Invalid image
+تصویر خوانده نشد	The image couldn't be read
+صدا	Audio
+این فایل صدای قابل خواندن ندارد	This file has no readable audio
+در حال افزودن صدا…	Adding audio…
+افزودن صدا ناموفق بود: {0}	Couldn't add the audio: {0}
+ضبط صدا 	Voice recording 
+زیرنویسی برای خروجی گرفتن وجود ندارد	There are no subtitles to export
+هیچ زیرنویسی روی ویدیوی ادیت‌شده نمانده است	No subtitles are left on the edited video
+فایل SRT در پوشه‌ی Download/ZirCut ذخیره شد	SRT file saved in Download/ZirCut
+ذخیره‌ی SRT ناموفق بود	Couldn't save the SRT
+زیرنویس قابل استفاده‌ای در فایل پیدا نشد	No usable subtitles found in the file
+{0} زیرنویس وارد شد	{0} subtitles imported
+ ({0} مورد روی عکس/ویدیوی اضافه یا خارج از زمان رد شد)	 ({0} skipped: on a photo/extra video or outside the timeline)
+در حال تشخیص صحنه…	Detecting scenes…
+در حال تشخیص صحنه… {0}٪	Detecting scenes… {0}%
+تغییر صحنه‌ی مشخصی پیدا نشد	No clear scene change found
+ویدیو در {0} محل تغییر صحنه برش خورد	The video was cut at {0} scene changes
+فایل‌های بلااستفاده پاک شد: 	Unused files deleted: 
+ مگابایت	 MB
+فایل بلااستفاده‌ای پیدا نشد	No unused files found
+فایل LUT خوانده نشد یا بزرگ‌تر از ۸ مگابایت است.	The LUT file couldn't be read or is larger than 8 MB.
+این فایل یک LUT سه‌بعدی معتبر (.cube) نیست.	This is not a valid 3D LUT (.cube) file.
+خواندن LUT ناموفق بود: {0}	Couldn't read the LUT: {0}
+در حال افزودن پس‌زمینه…	Adding background…
+افزودن پس‌زمینه ناموفق بود: {0}	Couldn't add the background: {0}
+صدایی برای استخراج نیست	There is no audio to extract
+استخراج صدا برای ویدیوی بیشتر از ۱۵ دقیقه پشتیبانی نمی‌شود	Audio extraction isn't supported for videos longer than 15 minutes
+در حال استخراج صدای ویدیو…	Extracting the video's audio…
+صدای ویدیو 	Video audio 
+صدای ویدیو به یک کلیپ صوتی تبدیل شد؛ صدای اصلی خاموش شد	The video's sound became an audio clip; the original sound is muted
+استخراج صدا ناموفق بود: {0}	Audio extraction failed: {0}
+در حال حذف نویز صدا… (چند ثانیه صبر کن)	Reducing noise… (wait a few seconds)
+حذف نویز انجام شد	Noise reduction done
+حذف نویز	Noise reduction
+همه‌ی باندها صفر است؛ چیزی تغییر نمی‌کند.	All bands are zero; nothing would change.
+در حال اعمال اکولایزر…	Applying the equalizer…
+اکولایزر اعمال شد	Equalizer applied
+اکولایزر	Equalizer
+فایل صوتی بیشتر از ۱۵ دقیقه است؛ برای {0} اول آن را کوتاه کن.	The audio file is longer than 15 minutes; shorten it first for {0}.
+{1} ناموفق بود: {0}	{1} failed: {0}
+شکل موج این صدا هنوز ساخته نشده؛ چند ثانیه بعد دوباره امتحان کن	The waveform of this audio isn't ready yet; try again in a few seconds
+سکوت قابل‌حذفی پیدا نشد	No removable silence found
+سکوت حذف شد (حدود {0} ثانیه کوتاه‌تر)	Silence removed (about {0} seconds shorter)
+در حال افزودن رسانه…	Adding media…
+افزودن رسانه ناموفق بود: {0}	Couldn't add the media: {0}
+فایل این کلیپ پیدا نشد	This clip's file wasn't found
+این کلیپ عکسه؛ فریم ثابت فقط برای ویدیو است	This clip is a photo; freeze frame is for videos only
+در حال ساخت فریم ثابت…	Creating the freeze frame…
+ساخت فریم ثابت ناموفق بود: {0}	Couldn't create the freeze frame: {0}
+فریم خوانده نشد	The frame couldn't be read
+پروژه باز نشد؛ فایل پروژه یا ویدیوی آن پیدا نشد.	The project couldn't be opened; the project file or its video wasn't found.
+قالب «{0}» اعمال شد	Template "{0}" applied
+؛ متن عنوان را در تب لایه‌ها عوض کن	; change the title text in the Layers tab
+حداکثر ۱۲ قالب شخصی؛ اول یکی را حذف کن	Up to 12 personal templates; delete one first
+قالب من 	My template 
+«{0}» ذخیره شد	"{0}" saved
+ (با متن انتخاب‌شده)	 (with the selected text)
+ (بدون متن؛ برای ذخیره‌ی متن اول یک لایه‌ی متن را انتخاب کن)	 (without text; to save the text, select a text layer first)
+در حال آماده‌سازی ویدیو…	Preparing the video…
+ویدیو از حافظه‌ی گوشی خونده نشد ({0}). اگه ویدیو توی گوگل‌فوتوز یا گالری ابری بود، اول توی حافظه‌ی گوشی ذخیره‌ش کن و دوباره انتخابش کن.	The video couldn't be read from the phone's storage ({0}). If it was in Google Photos or a cloud gallery, save it to the phone first and pick it again.
+این ویدیو باز نشد: {0}	This video couldn't be opened: {0}
+در حال ساخت پروژه…	Creating the project…
+مسیر فایل نامعتبر	Invalid file path
+ساخت پروژه ناموفق بود: {0}	Couldn't create the project: {0}
+فایل باز نشد	The file couldn't be opened
+۳۰ ثانیه هیچ داده‌ای نیومد	No data arrived for 30 seconds
+فایل ناقص کپی شد	An incomplete file was copied
+ذخیره‌ی فایل نشد	The file couldn't be saved
+اطلاعات ویدیو ناقصه	The video's information is incomplete
+در حال دانلود مدل ({0} مگابایت)…	Downloading the model ({0} MB)…
+دانلود مدل نشد ({0}). اگه سایت فیلتره، فایل مدل رو جداگانه بگیر و با «وارد کردن فایل» انتخاب کن.	Couldn't download the model ({0}). If the site is blocked, get the model file separately and pick it with "Import file".
+در حال وارد کردن مدل…	Importing the model…
+وارد کردن مدل نشد: {0}	Couldn't import the model: {0}
+در حال خواندن صدا…	Reading the audio…
+در حال اتصال به سرویس آنلاین…	Connecting to the online service…
+صدا خوانده شد ({0} ثانیه). در حال فرستادن به سرویس آنلاین…	Audio read ({0} seconds). Sending it to the online service…
+صدا خوانده شد ({0} ثانیه). در حال تشخیص گفتار…	Audio read ({0} seconds). Recognizing speech…
+تکه {0} جواب نداد؛ تلاش دوباره ({1} از {2})… 	Piece {0} didn't answer; trying again ({1} of {2})… 
+تشخیص گفتار آنلاین… ({1} از {0})	Online speech recognition… ({1} of {0})
+پاسخی نیامد	No answer came
+اینترنت قطعه یا آدرس سرویس پیدا نشد	The internet is down or the service address wasn't found
+سرویس دیر جواب داد	The service answered too slowly
+اتصال به سرویس برقرار نشد	The connection to the service couldn't be made
+سرویس آنلاین بدون فیلترشکن باز نمی‌شه. فیلترشکن رو روشن کن و «تلاش دوباره» رو بزن؛ یا مدل آفلاین رو فقط یک بار دانلود کن (معمولاً بدون فیلترشکن دانلود می‌شه).	The online service doesn't open without a VPN. Turn on your VPN and tap "Try again"; or download the offline model just once (it usually downloads without a VPN).
+تشخیص آنلاین انجام نشد	Online recognition failed
+. فیلترشکن رو چک کن و دوباره امتحان کن، یا مدل آفلاین رو دانلود کن.	. Check your VPN and try again, or download the offline model.
+پردازنده‌ی این گوشی قدیمی است و از نسخه‌ی سریع تشخیص گفتار پشتیبانی نمی‌کند.	This phone's processor is old and doesn't support the fast speech-recognition build.
+در حال آماده‌سازی مدل (فقط بار اول، چند ثانیه)…	Preparing the model (first time only, a few seconds)…
+مدل بارگذاری نشد. فایل مدل خراب یا ناقصه.	The model couldn't be loaded. The model file is damaged or incomplete.
+ · حدود {0} دقیقه مانده	 · about {0} min left
+در حال تشخیص گفتار… ({0} از {1}){2}	Recognizing speech… ({0} of {1}){2}
+از حافظه (تشخیص دوباره انجام نشد)	From memory (no new recognition)
+{0} · {1} تکه · کل {2} ثانیه · هر تکه {3} ثانیه	{0} · {1} pieces · {2} seconds in total · {3} seconds each
+ · اصلاح املا: {0} از {1} تکه	 · spelling fixes: {0} of {1} pieces
+ · {0} کلمه تا ثانیه {1} از {2}	 · {0} words up to second {1} of {2}
+هیچ گفتاری تشخیص داده نشد (تعداد خام: {0}). مدل بزرگ‌تر (base یا small) را امتحان کن یا ویدیویی با صدای واضح‌تر بده.	No speech was detected (raw count: {0}). Try a larger model (base or small) or a video with clearer sound.
+خطای ناشناخته	Unknown error
+همه‌ی زیرنویس‌ها از این کوتاه‌ترند	All subtitles are shorter than this
+زیرنویس‌ها به بخش‌های کوتاه تقسیم شد	Subtitles were split into short parts
+در حال تست… (تا ۱ دقیقه)	Testing… (up to 1 minute)
+آپلود {0}KB: رسید (کد {2}) · {1}ms	Upload {0}KB: received (code {2}) · {1}ms
+آپلود {0}KB: قطع شد ← {1}: {2} · {3}ms	Upload {0}KB: cut off ← {1}: {2} · {3}ms
+آدرس: {0}	Address: {0}
+DNS درسته: {0} · {1}ms	DNS OK: {0} · {1}ms
+DNS خراب: {0}	DNS failed: {0}
+اتصال ساده: باز شد (کد {0}) · {1}ms	Simple connection: opened (code {0}) · {1}ms
+اتصال ساده: نشد ← {0}: {1}	Simple connection: failed ← {0}: {1}
+کلیپ فشرده ۳ثانیه‌ای ({0}KB): کد {2} · {1}ms	Compressed 3-second clip ({0}KB): code {2} · {1}ms
+پاسخ: 	Reply: 
+کلیپ فشرده: قطع شد ← {0}: {1}	Compressed clip: cut off ← {0}: {1}
+— مقایسه: همین آپلود به یه سایت دیگه (cloudflare.com) —	— Comparison: the same upload to another site (cloudflare.com) —
+نتیجه: آپلود به سرویس سالمه. مشکل از چیز دیگه‌ایه؛ این متن رو برام بفرست.	Result: uploading to the service works. The problem is something else; send me this text.
+نتیجه: حتی آپلود کوچیک هم قطع می‌شه؛ آدرس سرویس از این اینترنت بسته‌ست.	Result: even a small upload gets cut off; the service address is blocked on this internet connection.
+نتیجه: آپلودهای بزرگ‌تر از {0}KB به سرویس ما قطع می‌شن. برنامه صدا رو فشرده و تکه‌های کوچک می‌فرسته، ولی اگه باز هم قطع شد این متن رو برام بفرست.	Result: uploads bigger than {0}KB to our service get cut off. The app sends compressed audio in small pieces, but if it still gets cut off, send me this text.
+نتیجه: آپلود حجیم روی کل این اینترنت قطع می‌شه (از خود شبکه‌ست).	Result: heavy uploads get cut off on this whole internet connection (the network itself).
+رسانه‌ی یکی از کلیپ‌ها پیدا نشد. آن کلیپ را از تایم‌لاین حذف کن.	The media of one of the clips wasn't found. Remove that clip from the timeline.
+فایل عکس یکی از لایه‌ها پیدا نشد. آن لایه را از تب «لایه» حذف کن.	The picture file of one of the layers wasn't found. Remove that layer from the "Layer" tab.
+عبارت‌ها {0} · کلمه‌ها {1} · بازه‌ها {2} · مجموع {3}ms از {4}ms · زیرنویس={5} · عمودی={6}	Phrases {0} · words {1} · ranges {2} · total {3}ms of {4}ms · subtitles={5} · vertical={6}
+\nاولین عبارت: «{0}» از {1} تا {2}ms	\nFirst phrase: "{0}" from {1} to {2}ms
+\nهیچ عبارتی وجود ندارد	\nThere are no phrases
+در حال ساخت ویدیو…	Creating the video…
+ویدیوی بدون گفتار	Video without speech
+ذخیره ویدیو نشد: {0}	The video couldn't be saved: {0}
+در حال میکس صدا…	Mixing the audio…
+در حال اعمال سرعت کلیپ‌ها…	Applying clip speeds…
+میکس صدا ناموفق بود: {0}	Audio mixing failed: {0}
+دسترسی به گالری ممکن نشد	Gallery access wasn't possible
+صدایی برای پردازش پیدا نشد	No audio found to process
+این ویدیو صدا ندارد	This video has no audio
+خطای سرویس آنلاین ({0})	Online service error ({0})
+اصلی	Original
+زنده	Vivid
+گرم	Warm
+سرد	Cool
+سیاه‌وسفید	Black & white
+سینمایی	Cinematic
+قدیمی	Vintage
+محو	Fade
+دراماتیک	Dramatic
+ملایم	Soft
+خطا در ساخت ویدیو	Error while creating the video
+نسبی	Relative
+مطلق	Absolute
+اورلی صدا زده شد: {2} بار · فریم‌های دارای زیرنویس: {3} · زمان‌بندی: {4} · آخرین زمان: {0}ms · خطای رندر: {1}	Overlay called: {2} times · frames with subtitles: {3} · timing: {4} · last time: {0}ms · render error: {1}
+فونت سیستم	System font
+بدون	None
+زوم	Zoom
+اسلاید	Slide
+چرخش	Spin
+بلور	Blur
+گلیچ	Glitch
+آماده‌سازی مدل ناموفق بود	Model preparation failed
+ذخیره مدل ناموفق بود	Saving the model failed
+دانلود مدل نشد. اینترنت یا فیلترشکن را بررسی کن، یا فایل مدل را از «وارد کردن فایل مدل» بده.	Couldn't download the model. Check your internet or VPN, or provide the model file with "Import model file".
+خطای سرور: {0}	Server error: {0}
+طبق استایل	By style
+پاپ	Pop
+اسلاید از پایین	Slide from below
+پرش کلمه	Word bounce
+ضربتی	Punchy
+تمیز	Clean
+کادر	Box
+هایلایت	Highlight
+ویلاگ	Vlog
+خبری	News
+نئون	Neon
+استعداد	Estedad
+ساحل	Sahel
+میخک	Mikhak
+سریع (ضعیف‌تر)	Fast (less accurate)
+متوسط	Medium
+دقیق (کندتر)	Accurate (slower)
+بهترین دقت (۵۷۰ مگابایت، خیلی کندتر)	Best accuracy (570 MB, much slower)
+حداکثر دقت (۱ گیگابایت، بسیار کند)	Maximum accuracy (1 GB, very slow)
+آزاد 	Free 
+اندازه اصلی	Original size
+ویدیو برای اعمال سرعت پیدا نشد	The video to apply speed to wasn't found
+هیچ فریمی برای اعمال سرعت خوانده نشد	No frames could be read to apply speed
+پروژه بازیابی‌شده	Recovered project
+ (کپی)	 (copy)
+پروژه {0}	Project {0}
+صدای ویدیو	Video audio
+ریلز و شورتس	Reels & Shorts
+عمودی ۹:۱۶ · زیرنویس ضربتی · رنگ زنده	Vertical 9:16 · punchy subtitles · vivid color
+عنوان ویدیو	Video title
+تیتر زرد	Yellow headline
+یوتیوب	YouTube
+افقی ۱۶:۹ · زیرنویس کادر · نام پایین تصویر	Horizontal 16:9 · box subtitles · name at the bottom
+نام شما	Your name
+جعبه تیره	Dark box
+عریض ۲٫۳۵ · رنگ سینمایی · عنوان وسط	Wide 2.35 · cinematic color · centered title
+عنوان فیلم	Movie title
+ساده	Plain
+پست مربعی	Square post
+۱:۱ · زیرنویس تمیز · رنگ ملایم	1:1 · clean subtitles · soft color
+عنوان پست	Post title
+پست ۴:۵	Post 4:5
+۴:۵ · هایلایت · رنگ گرم	4:5 · highlight · warm color
+برچسب قرمز	Red label
+طلایی	Golden
+استایل {0}	Style {0}
+٪	%
+کروما کی فقط روی کلیپ‌های ویدیویی کار می‌کند. پلی‌هد را روی یک ویدیو ببر.	Chroma key only works on video clips. Move the playhead onto a video.
+کروما کی — کلیپ 	Chroma key — clip 
+ از 	 of 
+روشن	On
+خاموش	Off
+خاموش‌کردن	Turn off
+روشن‌کردن	Turn on
+۱. رنگ پرده را انتخاب کن (رنگ‌چکان)	1. Pick the screen color (eyedropper)
+در حال خواندن فریم…	Reading the frame…
+فریمی خوانده نشد	No frame could be read
+رنگ انتخاب‌شده: 	Picked color: 
+فریم جدید از پلی‌هد	New frame from playhead
+روی یک جای صاف و بدون سایه‌ی پرده بزن؛ می‌شود انگشت را کشید.	Tap a flat, shadow-free spot of the screen; you can drag your finger.
+سبز استاندارد	Standard green
+آبی استاندارد	Standard blue
+۲. تنظیم حذف رنگ	2. Color removal settings
+تلرانس رنگ (چقدر از رنگ‌های نزدیک حذف شود)	Color tolerance (how many nearby colors are removed)
+نرمی لبه	Edge softness
+حذف انعکاس رنگ پرده روی سوژه (Spill)	Remove screen color reflection on the subject (Spill)
+۳. نتیجه روی همین فریم	3. Result on this frame
+برای دیدن نتیجه، کروما را روشن کن یا رنگی انتخاب کن.	Turn chroma on or pick a color to see the result.
+پیش‌نمایش زنده روی خود ویدیوی بالا هم دیده می‌شود.	The live preview is also visible on the video above.
+پیش‌نمایش زنده‌ی روی ویدیو به اندروید ۱۳ یا بالاتر نیاز دارد؛ در این گوشی نتیجه را همین‌جا و در خروجی می‌بینی.	Live preview on the video needs Android 13 or newer; on this phone you see the result here and in the export.
+۴. پس‌زمینه پشت سوژه	4. Background behind the subject
+شفاف	Transparent
+رنگ ساده	Solid color
+عکس	Picture
+انتخاب عکس پس‌زمینه	Choose background picture
+تعویض عکس پس‌زمینه	Change background picture
+ویدیوی MP4 شفافیت ندارد؛ پس در خروجی بخش «شفاف» با مشکی پر می‌شود. برای دیدن سوژه روی ویدیو/عکس دیگر، عکس پس‌زمینه را انتخاب کن.	MP4 video has no transparency, so "Transparent" is filled with black in the export. To see the subject over another picture, choose a background picture.
+حذف کروما از این کلیپ	Remove chroma from this clip
+کروما فقط روی همین کلیپ اعمال می‌شود. برای کلیپ‌های دیگر، پلی‌هد را ببر روی آن‌ها.	Chroma applies only to this clip. For other clips, move the playhead onto them.
+کلیپ	Clip
+ویرایش کلیپ	Edit clip
+کروما	Chroma
+کروما کی (پرده سبز)	Chroma key (green screen)
+لایه	Layer
+لایه‌های متن و عکس	Text and picture layers
+صدا و موسیقی	Audio & music
+زیرنویس	Subtitles
+زیرنویس‌ها	Subtitles
+استایل	Style
+استایل زیرنویس	Subtitle style
+فونت	Font
+فونت زیرنویس	Subtitle font
+جایگاه	Position
+جایگاه و اندازه	Position & size
+فیلتر	Filter
+فیلتر و رنگ	Filter & color
+ادیت	Edit
+ویرایش خودکار	Auto edit
+میکروفون باز نشد؛ شاید برنامه‌ی دیگری از آن استفاده می‌کند.	The microphone couldn't be opened; maybe another app is using it.
+برای ضبط صدا باید اجازه‌ی میکروفون را بدهی.	You must allow microphone access to record audio.
+ویرایش	Edit
+در حال ذخیره…	Saving…
+ذخیره شد	Saved
+ذخیره نشد	Couldn't save
+خروجی	Export
+ بخش	 part
+خودکار	Auto
+عکس 	Photo 
+ویدیو 	Video 
+هنوز زیرنویسی ساخته نشده	No subtitles created yet
+قفل · 	Locked · 
+مخفی · 	Hidden · 
+با تشخیص گفتار، زیرنویس خودکار ساخته می‌شه. اگه نسازی، ویدیو بدون زیرنویس خروجی می‌گیره.	Subtitles are created automatically with speech recognition. If you don't create them, the video is exported without subtitles.
+ساخت زیرنویس خودکار	Create automatic subtitles
+تقسیم به بخش‌های کوتاه (حداکثر تعداد کلمه)	Split into short parts (maximum number of words)
+زمان‌بندی	Timing
+شروع −	Start −
+شروع +	Start +
+پایان −	End −
+پایان +	End +
+زمان هر کلمه (هایلایت در شروع کلمه می‌رسد)	Time of each word (the highlight arrives at the word's start)
+احتمال خطا:	Possible error:
+اصلاح کلمه	Fix word
+تأیید	Confirm
+لغو	Cancel
+اگه اول یک کلمه در متن زیرنویس * بذاری، اون کلمه با رنگ تاکیدی نشون داده می‌شه.	If you put * at the start of a word in the subtitle text, that word is shown in the accent color.
+سلام	Hello
+دنیا	world
+بدون حروف فارسی	No Persian letters
+سلام دنیا	Hello world
+افزودن فونت (.ttf / .otf)	Add font (.ttf / .otf)
+بالا چپ	Top left
+بالا وسط	Top center
+بالا راست	Top right
+وسط چپ	Middle left
+وسط	Center
+وسط راست	Middle right
+پایین چپ	Bottom left
+پایین وسط	Bottom center
+پایین راست	Bottom right
+اندازه	Size
+عرض متن	Text width
+جای عمودی	Vertical position
+جای افقی	Horizontal position
+فاصله خطوط	Line spacing
+٫	.
+کلمه در هر خط	Words per line
+انیمیشن زیرنویس	Subtitle animation
+از پایین	From below
+از بالا	From above
+از چپ	From the left
+از راست	From the right
+به پایین	Downward
+به بالا	Upward
+به چپ	To the left
+به راست	To the right
+ ث	 s
+متن 	Text 
+عکس جدید	New picture
+متن یا عکس اضافه کن؛ روی پیش‌نمایش با انگشت جابه‌جا و با دو انگشت بزرگ و بچرخانش.	Add text or a picture; on the preview, drag with one finger and scale and rotate with two.
+یک لایه را از بالا یا از روی تایم‌لاین (زیر زیرنویس‌ها) انتخاب کن.	Select a layer from above or from the timeline (under the subtitles).
+متن	Text
+ تا 	 to 
+  ·  در این لحظه دیده نمی‌شود	  ·  not visible at this moment
+قفل لایه	Lock layer
+جلوگیری از جابه‌جایی و ویرایش ناخواسته	Prevents accidental moving and editing
+مخفی‌کردن لایه	Hide layer
+روی تایم‌لاین می‌ماند، ولی در پیش‌نمایش و خروجی دیده نمی‌شود	It stays on the timeline but isn't visible in the preview and export
+این لایه قفل است. برای ویرایش، اول قفل را بردار.	This layer is locked. Unlock it first to edit.
+برو به لایه	Go to layer
+استایل‌های آماده	Ready-made styles
+استایل‌های من	My styles
+ذخیره‌ی استایل این متن	Save this text's style
+حذف «	Delete "
+رنگ متن	Text color
+پس‌زمینه	Background
+حاشیه‌ی تیره دور حروف	Dark outline around letters
+رنگ حاشیه	Outline color
+سایه	Shadow
+قوی	Strong
+درخشش	Glow
+پررنگ (Bold)	Bold
+کج (Italic)	Italic
+تراز متن	Text alignment
+چپ	Left
+راست	Right
+فاصله حروف	Letter spacing
+فاصله حروف فقط برای حروف لاتین اثر دارد؛ در فارسی حروف را از هم جدا می‌کرد، پس نادیده گرفته می‌شود.	Letter spacing only affects Latin letters; in Persian it separated the letters, so it is ignored.
+حذف پس‌زمینه‌ی رنگی (کروما کی)	Remove colored background (chroma key)
+سبز	Green
+آبی	Blue
+سفید	White
+سیاه	Black
+حساسیت	Sensitivity
+روی عکس‌هایی که پس‌زمینه‌ی یک‌رنگ دارند (پرده‌ی سبز، پس‌زمینه‌ی سفید) کار می‌کنه. حساسیت رو تا جایی بالا ببر که پس‌زمینه برود و لبه‌ی سوژه سالم بماند. این ابزار فقط روی لایه‌ی عکس است، نه روی خود ویدیو.	Works on pictures with a single-color background (green screen, white background). Raise the sensitivity until the background goes away and the subject's edge stays intact. This tool works only on picture layers, not on the video itself.
+۵۰٪	50%
+۱۰۰٪	100%
+۱۵۰٪	150%
+۲۰۰٪	200%
+چرخش ۹۰°	Rotate 90°
+بازنشانی لایه	Reset layer
+شفافیت	Opacity
+زمان شروع	Start time
+مدت نمایش	Display duration
+کلیدفریم (موقعیت، اندازه، چرخش، شفافیت)	Keyframe (position, size, rotation, opacity)
+کلید قبلی	Previous key
+به‌روزرسانی	Update
+افزودن	Add
+حذف کلید	Delete key
+کلید بعدی	Next key
+حرکت از این کلید تا کلید بعدی	Motion from this key to the next key
+نرم	Smooth
+خطی	Linear
+ثابت (پله‌ای)	Hold (stepped)
+کلید ۱۰۰ms زودتر	Key 100ms earlier
+کلید ۱۰۰ms دیرتر	Key 100ms later
+پاک‌کردن همه‌ی کلیدفریم‌ها (	Clear all keyframes (
+پلی‌هد را روی یک لحظه بگذار و «افزودن» بزن؛ به لحظه‌ی دیگر برو و لایه را جابه‌جا یا کوچک و بزرگ کن (یا شفافیت را عوض کن) تا خودکار کلیدفریم ساخته شود. نوع حرکت بین کلیدها (نرم، خطی یا پله‌ای) را از همان کلید انتخاب می‌کنی. چرخش هم کلیدفریم می‌شود؛ روی کلیدهای دور از هم، چرخش از روی عددهای اسلایدر درون‌یابی می‌شود.	Put the playhead on a moment and tap "Add"; go to another moment and move, scale or fade the layer to create a keyframe automatically. You choose the motion type between keys (smooth, linear or stepped) from that key. Rotation is keyframed too; between keys far apart, rotation is interpolated from the slider values.
+انیمیشن ورود	Entrance animation
+انیمیشن خروج	Exit animation
+مدت انیمیشن	Animation duration
+شروع اینجا	Start here
+پایان اینجا	End here
+تقسیم	Split
+کپی	Copy
+بالاتر	Move up
+پایین‌تر	Move down
+حذف	Delete
+برای جابه‌جایی سریع، روی لایه‌ی تایم‌لاین چند لحظه نگه دار و افقی بکش. «بالاتر» لایه را روی لایه‌های دیگر می‌آورد؛ زیرنویس همیشه روی لایه‌هاست.	For quick moving, long-press the layer on the timeline and drag horizontally. "Move up" brings the layer above other layers; subtitles are always above the layers.
+صدای اصلی ویدیو	Video's original audio
+بلندی صدای اصلی	Original audio volume
+کم‌کردن خودکار موسیقی هنگام صحبت	Automatically lower music during speech
+زیر ویس (Voice Over) و زیر صحبت خود ویدیو (طبق زیرنویس‌ها)	Under voice-over and under the video's own speech (based on the subtitles)
+در حال ضبط…  	Recording…  
+توقف	Stop
+ویدیو هنگام ضبط پخش می‌شود. برای اینکه صدای ویدیو داخل ضبط نیفتد از هدفون استفاده کن. با توقف پخش یا رسیدن به انتهای تایم‌لاین هم ضبط تمام می‌شود.	The video plays while recording. Use headphones so the video's sound doesn't get into the recording. Recording also ends when you stop playback or reach the end of the timeline.
+موسیقی یا فایل صوتی	Music or audio file
+ضبط صدا	Record voice
+استخراج صدای ویدیو	Extract the video's audio
+صدای ویدیو (با برش‌ها و سرعت‌های فعلی) به یک کلیپ صوتی تبدیل می‌شه و صدای اصلی خاموش می‌شه. بعدش می‌تونی حذف نویز، اکولایزر، بلندی و محو شدن رو روی اون اعمال کنی.	The video's audio (with the current cuts and speeds) becomes an audio clip and the original sound is muted. Then you can apply noise reduction, equalizer, volume and fades to it.
+ضبط	Record
+موسیقی یا صدا را از فایل اضافه کن، یا با «ضبط صدا» گویندگی بساز. هر صدا روی تایم‌لاین (زیر لایه‌ها) با شکل‌موج واقعی دیده می‌شود.	Add music or audio from a file, or make a voice-over with "Record voice". Each audio shows on the timeline (under the layers) with its real waveform.
+یک صدا را از بالا یا از روی تایم‌لاین انتخاب کن.	Select an audio from above or from the timeline.
+موسیقی / صدا	Music / audio
+پخش این صدا	Play this audio
+بی‌صدا	Mute
+بلندی صدا	Volume
+محو شدن در شروع	Fade in
+محو شدن در پایان	Fade out
+حالت‌های محوشدن	Fade modes
+بدون محو	No fade
+محو شروع	Fade in
+محو پایان	Fade out
+شروع و پایان	Start and end
+زمان شروع روی تایم‌لاین	Start time on the timeline
+شروع از ثانیه‌ی…	Start from second…
+مدت پخش	Play duration
+برو به صدا	Go to audio
+حذف نویز (مخصوص گفتار)	Noise reduction (for speech)
+نویز پس‌زمینه از روی بخش‌های ساکت خود فایل اندازه‌گیری و کم می‌شود و صدای رامبل پایین حذف می‌شود. نتیجه یک فایل تازه است و با بازگشت (Undo) به صدای قبلی برمی‌گردی. برای موسیقی استفاده نکن.	Background noise is measured from the quiet parts of the file itself and reduced, and low rumble is removed. The result is a new file, and with Undo you go back to the previous audio. Don't use it for music.
+حذف سکوت	Remove silence
+فقط سکوت کامل	Only complete silence
+شدید	Strong
+مکث‌های بیشتر از نیم‌ثانیه حذف می‌شوند و بخش‌ها به هم می‌چسبند. کلیپ به چند کلیپ پشت‌سرهم تقسیم می‌شود و کلیپ‌های دیگر جابه‌جا نمی‌شوند. برای صدایی که با تصویر هماهنگ است (مثل صدای استخراج‌شده) استفاده نکن، چون هماهنگی با تصویر به هم می‌خورد.	Pauses longer than half a second are removed and the parts are joined. The clip is split into several consecutive clips and other clips don't move. Don't use it for audio synced to the picture (like extracted audio), because the sync with the picture would break.
+اکولایزر ۵ باند	5-band equalizer
+بم (۱۲۰ هرتز)	Bass (120 Hz)
+بم‌میانه (۳۵۰ هرتز)	Low-mid (350 Hz)
+میانه (۱ کیلوهرتز)	Mid (1 kHz)
+زیر‌میانه (۳٫۵ کیلوهرتز)	High-mid (3.5 kHz)
+زیر (۶ کیلوهرتز)	Treble (6 kHz)
+گفتار شفاف	Clear speech
+بم قوی	Strong bass
+حذف صدای تو‌دماغی	Remove nasal sound
+صفر	Zero
+اعمال اکولایزر	Apply equalizer
+اکولایزر روی یک فایل تازه اعمال می‌شود (با Undo برمی‌گردد). برای اثر بیشتر می‌شود چند بار اعمال کرد؛ اگر صدا خش افتاد، مقدارها را کمتر کن.	The equalizer is applied to a new file (Undo brings it back). You can apply it several times for a stronger effect; if the sound gets harsh, use smaller values.
+برای جابه‌جایی سریع، روی کلیپ صوتی در تایم‌لاین چند لحظه نگه دار و افقی بکش. بلندی هر صدا تا ۱۰۰٪ است و صداها هنگام خروجی با همین مقدارها میکس می‌شوند.	For quick moving, long-press the audio clip on the timeline and drag horizontally. Each audio's volume goes up to 100%, and audios are mixed with these values on export.
+کلیپ 	Clip 
+ریپل (جابه‌جایی همراه برش)	Ripple (move along with the cut)
+لایه‌ها و صدای بعد از تغییر، همراه کوتاه/بلند شدن کلیپ جابه‌جا می‌شوند؛ لایه‌ی قفل‌شده ثابت می‌ماند	Layers and audio after the change move along with the clip getting shorter/longer; a locked layer stays fixed
+ترنزیشن ورود کلیپ 	Clip entrance transition 
+ (محل برش قبلی)	 (previous cut point)
+پیش‌فرض پروژه	Project default
+مدت ترنزیشن این برش	Duration of this cut's transition
+ م‌ث	 ms
+افکت همین کلیپ 	Effect on this clip 
+روشنایی	Brightness
+کنتراست	Contrast
+اشباع رنگ	Saturation
+گرمی / سردی	Warmth / coolness
+شارپ	Sharpen
+حالت‌های آماده برای این کلیپ	Ready looks for this clip
+اعمال روی همه‌ی کلیپ‌ها	Apply to all clips
+کپی به کلیپ بعدی	Copy to the next clip
+پاک‌کردن افکت این کلیپ	Clear this clip's effect
+این افکت‌ها فقط روی همین کلیپ‌اند و روی فیلتر و افکت‌های تب «فیلتر» اضافه می‌شن. شارپ در پیش‌نمایش دیده نمی‌شه و فقط در خروجی اعمال می‌شه؛ بلور در پیش‌نمایش فقط روی اندروید ۱۲ به بالا است.	These effects are only on this clip and are added on top of the filter and effects of the "Filter" tab. Sharpen isn't visible in the preview and is only applied in the export; blur in the preview works only on Android 12 and up.
+۱۰ فریم قبل	10 frames back
+فریم قبل	Frame back
+فریم بعد	Frame forward
+۱۰ فریم بعد	10 frames forward
+حذف قبل	Delete before
+حذف بعد	Delete after
+حذف کلیپ	Delete clip
+قبل‌تر	Earlier
+بعدتر	Later
+برش خودکار	Auto cut
+ادغام برش‌ها	Merge cuts
+معکوس ترتیب	Reverse order
+کپی کل تدوین	Copy the whole edit
+سرعت کلیپ — 	Clip speed — 
+شتاب‌گیری	Speed up
+کندشدن	Slow down
+اوج سرعت	Peak speed
+سرعت فقط روی کلیپ زیر پلی‌هد اعمال می‌شه. «شتاب‌گیری»، «کندشدن» و «اوج سرعت» کلیپ رو به ۴ تکه با سرعت‌های مختلف تقسیم می‌کنن و هر تکه جدا قابل ویرایشه. خروجی با سرعت کمی بیشتر طول می‌کشه.	Speed applies only to the clip under the playhead. "Speed up", "Slow down" and "Peak speed" split the clip into 4 pieces with different speeds, and each piece can be edited separately. The export takes slightly longer.
+روی کلیپ عکس سرعت اعمال نمی‌شه.	Speed doesn't apply to a photo clip.
+انتخاب چند کلیپ	Select multiple clips
+همه	All
+هیچ‌کدام	None
+برو به اولی	Go to the first
+جابه‌جایی انتخاب‌شده‌ها	Move the selected
+به اول	To the start
+یکی جلوتر	One forward
+یکی عقب‌تر	One back
+به آخر	To the end
+سرعت انتخاب‌شده‌ها	Speed of the selected
+اعمال سرعت	Apply speed
+شماره‌ی کلیپ‌ها همان ترتیب تایم‌لاین است. کلیپ عکس سرعت نمی‌گیرد و رد می‌شود. همه‌ی تغییرات یک مرحله‌ی Undo هستند.	Clip numbers follow the timeline order. A photo clip can't take speed and is skipped. All changes are one Undo step.
+چرخش و زوم تصویر (همه‌ی ویدیوها)	Picture rotation & zoom (all videos)
+چرخش ۹۰° راست	Rotate 90° right
+چرخش ۹۰° چپ	Rotate 90° left
+بازنشانی	Reset
+قرینه افقی	Flip horizontally
+قرینه عمودی	Flip vertically
+چرخش آزاد	Free rotation
+زوم تصویر	Picture zoom
+جابه‌جایی افقی	Horizontal shift
+جابه‌جایی عمودی	Vertical shift
+شفافیت تصویر (محو به سیاه)	Picture opacity (fade to black)
+کی‌فریم زوم، جابه‌جایی، چرخش آزاد و شفافیت تصویر	Keyframes for zoom, shift, free rotation and picture opacity
+ کی‌فریم	 keyframe
+کی‌فریم قبل	Previous keyframe
+ثبت اینجا	Set here
+کی‌فریم بعد	Next keyframe
+حرکت از این کی‌فریم تا کی‌فریم بعد	Motion from this keyframe to the next keyframe
+کی‌فریم ۱۰۰ms زودتر	Keyframe 100ms earlier
+کی‌فریم ۱۰۰ms دیرتر	Keyframe 100ms later
+حذف این کی‌فریم	Delete this keyframe
+پاک‌کردن همه‌ی کی‌فریم‌ها	Clear all keyframes
+پلی‌هد را ببر، زوم/جابه‌جایی را تنظیم کن و «ثبت اینجا» را بزن (چرخش آزاد و شفافیت هم ثبت می‌شوند؛ با لغزنده‌ی شفافیت اولین کی‌فریم خودکار ساخته می‌شود)؛ در جای دیگر دوباره. بین کی‌فریم‌ها حرکت نرم است. با وجود کی‌فریم، لغزنده‌ها خودشان کی‌فریم می‌گذارند. کی‌فریم‌ها به زمان تایم‌لاین بسته‌اند و با برش کلیپ‌ها جابه‌جا نمی‌شوند.	Move the playhead, adjust zoom/shift and tap "Set here" (free rotation and opacity are saved too; moving the opacity slider creates the first keyframe automatically); then again somewhere else. Motion between keyframes is smooth. When keyframes exist, the sliders put keyframes themselves. Keyframes are tied to timeline time and don't move when clips are cut.
+فریم ثابت (Freeze) — مدت	Freeze frame — duration
+ ثانیه	 seconds
+ثابت‌کردن فریم زیر پلی‌هد	Freeze the frame under the playhead
+افزودن ویدیو یا عکس در پلی‌هد	Add a video or photo at the playhead
+برش دستی فعاله. دستگیره‌های دو سر کلیپ را بکش تا ابتدا یا انتهای همان کلیپ کوتاه شود. با «برش خودکار» دوباره به حذف خودکار سکوت‌ها برمی‌گردی.	Manual trim is on. Drag the handles at both ends of the clip to shorten its start or end. With "Auto cut" you return to automatic silence removal.
+با اولین تغییر، برش فعلی (با حذف سکوت‌ها) به کلیپ‌های قابل ویرایش تبدیل می‌شه. پلی‌هد رو روی نقطه‌ی دلخواه بذار و ابزار رو بزن.	With your first change, the current cut (with silences removed) becomes editable clips. Put the playhead on any point and tap the tool.
+مدت اصلی	Original duration
+بعد از ادیت	After editing
+خروجی SRT	Export SRT
+ورود SRT	Import SRT
+تشخیص صحنه و برش	Scene detection & cut
+پاک‌سازی فایل‌ها	Clean up files
+SRT با زمان ویدیوی ادیت‌شده ساخته و خوانده می‌شود. «پاک‌سازی» تاریخچه‌ی Undo را پاک می‌کند.	SRT is created and read with the edited video's timing. "Clean up" clears the Undo history.
+تنظیمات برنامه (مدل گفتار، زبان…)	App settings (speech model, language…)
+نمایش زیرنویس روی ویدیو	Show subtitles on the video
+حذف سکوت‌ها	Remove silences
+بخش‌های بی‌صدا برش می‌خورن	Silent parts get cut
+زوم ریتمی	Rhythmic zoom
+حرکت ملایم روی برش‌ها	Gentle movement on the cuts
+نسبت تصویر خروجی	Output aspect ratio
+آزاد	Free
+نسبت آزاد (عرض ÷ ارتفاع)	Free ratio (width ÷ height)
+قالب‌های آماده	Ready templates
+قالب‌های من	My templates
+ذخیره‌ی تنظیمات فعلی	Save current settings
+هر قالب نسبت تصویر، استایل زیرنویس، فیلتر رنگ و یک متن عنوان می‌گذارد. بعد از اعمال همه‌چیز قابل تغییر است و کل قالب با یک Undo برمی‌گردد.	Each template sets the aspect ratio, subtitle style, color filter and a title text. After applying, everything is changeable and the whole template is undone with one Undo.
+شدت فیلتر	Filter strength
+سبز / سرخ	Green / magenta
+نوردهی	Exposure
+تغییر رنگ‌مایه	Hue shift
+سفیدی‌ها	Whites
+سیاهی‌ها	Blacks
+افکت‌های تصویر	Picture effects
+وینیت	Vignette
+دانه‌ی فیلم	Film grain
+نوار سینمایی	Cinema bars
+نشت نور	Light leak
+تیزی	Sharpness
+جدایی RGB	RGB split
+نویز	Noise
+هایلایت‌ها	Highlights
+سایه‌ها	Shadows
+بلور در پیش‌نمایش فقط روی اندروید ۱۲ به بالا دیده می‌شود. تیزی، جدایی RGB، گلیچ، نویز، درخشش و هایلایت/سایه فقط در ویدیوی خروجی اعمال می‌شوند.	Blur is visible in the preview only on Android 12 and up. Sharpness, RGB split, glitch, noise, glow and highlights/shadows are applied only in the exported video.
+ترنزیشن در محل برش‌ها	Transition at the cuts
+مدت ترنزیشن	Transition duration
+پایان هر کلیپ خارج و ابتدای کلیپ بعدی وارد می‌شود (ترکیب هم‌زمان دو کلیپ نیست). فقط وقتی بیش از یک کلیپ داری دیده می‌شود.	The end of each clip goes out and the start of the next clip comes in (it isn't two clips blended at once). It only shows when you have more than one clip.
+LUT رنگ (فایل .cube)	Color LUT (.cube file)
+انتخاب فایل LUT	Choose LUT file
+تعویض فایل LUT	Change LUT file
+شدت LUT	LUT strength
+حذف LUT	Remove LUT
+پیش‌نمایش فقط تقریبی است (یک ماتریس رنگ مشابه LUT)؛ ویدیوی خروجی با خود LUT دقیق ساخته می‌شود.	The preview is only approximate (a color matrix similar to the LUT); the exported video is made with the exact LUT.
+برگرداندن همه به حالت اصلی	Reset everything to original
+خروجی ویدیو	Video export
+گزینه‌ها رو بررسی کن و ویدیو رو بساز.	Check the options and create the video.
+قالب	Format
+مدت نهایی	Final duration
+ندارد	None
+کیفیت خروجی	Output quality
+اندازه‌ی تصویر	Picture size
+۴K (پرمصرف)	4K (heavy)
+نرخ فریم	Frame rate
+مثل ویدیو	Same as video
+کدک	Codec
+H.264 (سازگارتر)	H.264 (more compatible)
+HEVC (حجم کمتر)	HEVC (smaller size)
+نرخ بیت ویدیو	Video bitrate
+خروجی: 	Output: 
+ · حجم تقریبی 	 · approximate size 
+ · نرخ خودکار 	 · automatic bitrate 
+ · صدا ثابت ۱۲۸ kbps	 · audio fixed at 128 kbps
+انکودر این گوشی: H.264 تا 	This phone's encoder: H.264 up to 
+ پیکسل	 pixels
+ (سخت‌افزاری)	 (hardware)
+ (نرم‌افزاری، کند)	 (software, slow)
+سخت‌افزاری	Hardware
+فقط نرم‌افزاری	Software only
+ · HEVC ندارد	 · no HEVC
+۴K حافظه و زمان زیادی می‌خواهد؛ اگر خروجی شکست خورد، برنامه خودش با کیفیت کمتر دوباره تلاش می‌کند.	4K needs a lot of memory and time; if the export fails, the app retries by itself at a lower quality.
+فضای خالی کافی نیست: برای این تنظیمات حدود 	Not enough free space: about 
+ مگابایت لازم است ولی 	 MB are needed for these settings but only 
+ مگابایت خالی است. نرخ بیت یا اندازه را کمتر کن.	 MB are free. Lower the bitrate or size.
+هنوز زیرنویسی ساخته نشده؛ ویدیو بدون زیرنویس ساخته می‌شه.	No subtitles created yet; the video will be made without subtitles.
+از 	From 
+ به 	 to 
+ کوتاه شد.	 shortened.
+ساخت ویدیو	Create video
+زیرکات	ZarCut
+استودیوی ادیت ویدیو	Video editing studio
+پروژه جدید	New project
+ویدیو رو وارد کن و ادیت رو شروع کن	Import a video and start editing
+ادامه ویرایش	Continue editing
+آخرین ویرایش 	Last edit 
+ادامه	Continue
+پروژه‌ها	Projects
+ پروژه	 project
+جستجوی پروژه	Search projects
+هنوز پروژه‌ای نداری	You don't have any projects yet
+با «پروژه جدید» یک ویدیو وارد کن؛ پروژه خودکار ذخیره می‌شه.	Import a video with "New project"; the project is saved automatically.
+پروژه‌ای با این نام پیدا نشد.	No project with this name was found.
+ویدیوهای ساخته‌شده	Created videos
+همین الان	Just now
+ دقیقه پیش	 minutes ago
+ ساعت پیش	 hours ago
+ روز پیش	 days ago
+تنظیمات اولیه رو انتخاب کن، بعد ویدیو رو وارد کن.	Choose the initial settings, then import the video.
+زبان گفتار	Speech language
+فارسی	Persian
+انتخاب ویدیو	Choose video
+تغییر نام	Rename
+ساخت نسخه‌ی کپی	Make a copy
+حذف پروژه	Delete project
+نام پروژه	Project name
+حذف «{0}»؟	Delete "{0}"?
+پروژه و نسخه‌ی ویدیوی داخل برنامه پاک می‌شه. ویدیوی اصلی توی گالری دست نمی‌خوره.	The project and the video copy inside the app are deleted. The original video in the gallery isn't touched.
+بنفش‌آبی	Violet-blue
+شب آبی	Night blue
+گرافیتی	Graphite
+جنگل	Forest
+اقیانوس	Ocean
+قرمز	Red
+ارسال صدا به سرور؟	Send audio to the server?
+برای ساخت زیرنویس بدون دانلود مدل، صدای ویدیو (نه تصویر) برای تشخیص گفتار به سرور آنلاین ZirCut فرستاده می‌شود. 	To create subtitles without downloading a model, the video's audio (not the picture) is sent to the ZirCut online server for speech recognition. 
+اگر نمی‌خواهی، مدل را روی گوشی دانلود کن تا همه‌چیز روی خود گوشی بماند. می‌توانی بعداً این اجازه را پس بگیری.	If you don't want that, download the model on the phone so everything stays on the phone itself. You can withdraw this permission later.
+اجازه می‌دهم	I allow it
+نه، مدل روی گوشی	No, model on the phone
+به یک مدل تشخیص گفتار نیاز داریم	We need a speech recognition model
+فقط بار اول دانلود می‌شه و بعدش همه‌چیز آفلاین کار می‌کنه.	It's downloaded only the first time, and after that everything works offline.
+تلاش دوباره (بعد از روشن کردن فیلترشکن)	Try again (after turning on the VPN)
+اندازه مدل	Model size
+دانلود مدل (	Download model (
+ مگابایت)	 MB)
+وارد کردن فایل مدل (.bin)	Import model file (.bin)
+پس گرفتن اجازه‌ی ارسال صدا به سرور	Withdraw permission to send audio to the server
+تست اتصال (پیدا کردن مشکل)	Connection test (find the problem)
+بازگشت به ادیتور	Back to the editor
+در حال پردازش…	Processing…
+صفحه رو روشن نگه دار. ممکنه چند دقیقه طول بکشه.	Keep the screen on. It may take a few minutes.
+تا تموم شدن، استایل زیرنویس رو انتخاب کن	Choose the subtitle style while you wait
+ویدیو آماده شد	The video is ready
+توی گالری (Movies/ZirCut) ذخیره شد.	Saved in the gallery (Movies/ZirCut).
+اشتراک‌گذاری	Share
+ویرایش دوباره	Edit again
+برگشت به خانه	Back to home
+یه مشکلی پیش اومد	Something went wrong
+گوشی تنظیمات ساخت ویدیو رو قبول نکرد. دوباره امتحان کن؛ برنامه خودش کیفیت رو پایین‌تر می‌آره.	The phone didn't accept the video export settings. Try again; the app lowers the quality by itself.
+مدل	Model
+مدل تشخیص گفتار آماده نیست. اینترنت رو چک کن و دوباره امتحان کن.	The speech recognition model isn't ready. Check your internet and try again.
+برگشت	Back
+تنظیمات	Settings
+زبان ویدیو	Video language
+مدل تشخیص گفتار	Speech recognition model
+دقت بیشتر (کندتر)	Higher accuracy (slower)
+خاموش = جستجوی سریع (پیش‌فرض). روشن = جستجوی دقیق‌تر ولی کندتر.	Off = fast search (default). On = more accurate but slower search.
+تشخیص آنلاین	Online recognition
+اگر آدرس سرویس آنلاین پر باشد، صدا برای تشخیص فرستاده می‌شود و هیچ مدلی دانلود نمی‌شود. اگر خطا بدهد، مدل روی گوشی استفاده می‌شود.	If the online service address is filled in, the audio is sent for recognition and no model is downloaded. If it errors, the on-phone model is used.
+آدرس سرویس آنلاین	Online service address
+زبان برنامه	App language
+در حال تحلیل صدا…	Analysing the sound…
+زیرنویس را از یک فایل SRT وارد کن. اگه وارد نکنی، ویدیو بدون زیرنویس خروجی می‌گیره.	Import the subtitles from an SRT file. If you don't, the video is exported without subtitles.
+تنظیمات برنامه (زبان…)	App settings (language…)
+بخش‌های بی‌صدا از روی تحلیل صدا برش می‌خورن	Silent parts are cut based on the sound analysis
+روش حذف پس‌زمینه	Background removal method
+رنگ پرده (کروما)	Colour screen (chroma key)
+هوش مصنوعی (حذف پس‌زمینه سوژه)	AI (remove subject background)
+هوش مصنوعی سوژه‌ی اصلی (آدم) را جدا می‌کند و بقیه را با پس‌زمینه‌ی انتخابی عوض می‌کند. کاملاً روی گوشی و بدون اینترنت کار می‌کند.	AI cuts out the main subject (a person) and replaces the rest with the background you choose. It runs fully on the phone, with no internet.
+برعکس‌کردن انتخاب (پس‌زمینه بماند، سوژه برود)	Invert selection (keep background, remove subject)
+نرمی لبه‌ی سوژه	Subject edge softness
+مدل هوش مصنوعی اجرا نشد: {0}	The AI model did not run: {0}
+پیش‌نمایش زنده روی ویدیو در حالت هوش مصنوعی هنوز نیست؛ نتیجه را همین‌جا و در خروجی می‌بینی. خروجی با هوش مصنوعی کندتر است.	There is no live preview on the video in AI mode yet; you see the result here and in the export. Export with AI is slower.
+مدل هوش مصنوعی داخل برنامه باز نشد: {0}	The AI model inside the app could not be opened: {0}
+مدل هوش مصنوعی روی این گوشی بارگذاری نشد. برنامه را ببند و دوباره امتحان کن.	The AI model could not be loaded on this phone. Close the app and try again.
