@@ -1,3 +1,5 @@
+import java.net.URL
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -44,8 +46,10 @@ val downloadAiModels by tasks.registering {
     outputs.upToDateWhen { aiModelFile.exists() && aiModelFile.length() > 100_000L }
     doLast {
         aiModelFile.parentFile.mkdirs()
-        val url = java.net.URL("https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite")
-        url.openStream().use { i -> aiModelFile.outputStream().use { o -> i.copyTo(o) } }
+        val url = URL("https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite")
+        url.openStream().use { input: java.io.InputStream ->
+            aiModelFile.outputStream().use { output: java.io.OutputStream -> input.copyTo(output) }
+        }
         check(aiModelFile.length() > 100_000L) { "selfie_segmenter.tflite download failed (file too small). Put the file in app/src/main/assets/ai/ by hand." }
     }
 }
