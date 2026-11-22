@@ -40,7 +40,6 @@ android {
 
 // fix236: on-device AI model, bundled INSIDE the APK. It is fetched ONCE here, at BUILD time (GitHub Actions has internet);
 // the installed app never downloads anything. If the file already exists in app/src/main/assets/ai/ it is used as it is.
-val aiModelFile = layout.projectDirectory.file("src/main/assets/ai/selfie_segmenter.tflite").asFile
 val downloadAiModels by tasks.registering {
     outputs.file(aiModelFile)
     outputs.upToDateWhen { aiModelFile.exists() && aiModelFile.length() > 100_000L }
