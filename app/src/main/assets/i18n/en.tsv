@@ -679,3 +679,11 @@ HEVC (حجم کمتر)	HEVC (smaller size)
 پیش‌نمایش زنده روی ویدیو در حالت هوش مصنوعی هنوز نیست؛ نتیجه را همین‌جا و در خروجی می‌بینی. خروجی با هوش مصنوعی کندتر است.	There is no live preview on the video in AI mode yet; you see the result here and in the export. Export with AI is slower.
 مدل هوش مصنوعی داخل برنامه باز نشد: {0}	The AI model inside the app could not be opened: {0}
 مدل هوش مصنوعی روی این گوشی بارگذاری نشد. برنامه را ببند و دوباره امتحان کن.	The AI model could not be loaded on this phone. Close the app and try again.
+بخش‌هایی که نگه داشته شوند (تشخیص مو و بدن)	Parts to keep (hair and body detection)
+کل سوژه	Whole subject
+مو	Hair
+پوست بدن	Body skin
+پوست صورت	Face skin
+لباس	Clothes
+وسایل و اکسسوری	Accessories
+هیچ بخشی انتخاب نشود = کل سوژه. مثلاً فقط «مو» را بزن تا فقط مو نگه داشته شود.	Nothing selected = the whole subject. For example tap only “Hair” to keep just the hair.

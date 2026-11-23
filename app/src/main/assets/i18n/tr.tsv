@@ -679,3 +679,11 @@ HEVC (حجم کمتر)	HEVC (daha küçük boyut)
 پیش‌نمایش زنده روی ویدیو در حالت هوش مصنوعی هنوز نیست؛ نتیجه را همین‌جا و در خروجی می‌بینی. خروجی با هوش مصنوعی کندتر است.	Yapay zekâ modunda videoda canlı önizleme henüz yok; sonucu burada ve dışa aktarımda görürsün. Yapay zekâlı dışa aktarım daha yavaştır.
 مدل هوش مصنوعی داخل برنامه باز نشد: {0}	Uygulamanın içindeki yapay zekâ modeli açılamadı: {0}
 مدل هوش مصنوعی روی این گوشی بارگذاری نشد. برنامه را ببند و دوباره امتحان کن.	Yapay zeka modeli bu telefonda yüklenemedi. Uygulamayı kapatıp tekrar dene.
+بخش‌هایی که نگه داشته شوند (تشخیص مو و بدن)	Tutulacak bölümler (saç ve vücut algılama)
+کل سوژه	Tüm özne
+مو	Saç
+پوست بدن	Vücut cildi
+پوست صورت	Yüz cildi
+لباس	Kıyafet
+وسایل و اکسسوری	Aksesuarlar
+هیچ بخشی انتخاب نشود = کل سوژه. مثلاً فقط «مو» را بزن تا فقط مو نگه داشته شود.	Hiçbiri seçili değilse tüm özne kalır. Örneğin yalnızca “Saç”a dokun, sadece saç kalır.
