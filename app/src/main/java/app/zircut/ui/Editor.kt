@@ -229,8 +229,10 @@ fun EditorScreen(
     val holder = remember { PlayerHolder() }
     var playing by remember { mutableStateOf(false) }
     var posMs by remember { mutableStateOf(0L) }
-    var tab by remember { mutableStateOf(if (ui.phrases.isNotEmpty()) EdTab.CAPTIONS else EdTab.CLIP) }
-    var panelOpen by remember { mutableStateOf(ui.phrases.isNotEmpty()) }
+    // Open the editor on the timeline first. Tool panels are opened only when the
+    // user chooses a tool, keeping the preview and timeline visible on small screens.
+    var tab by remember { mutableStateOf(EdTab.CLIP) }
+    var panelOpen by remember { mutableStateOf(false) }
     var showExport by remember { mutableStateOf(false) }
     var showRename by remember { mutableStateOf(false) }
     var tlScale by remember { mutableStateOf(48f) }
