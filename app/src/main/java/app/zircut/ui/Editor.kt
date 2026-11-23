@@ -174,17 +174,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import android.graphics.Paint as AndroidPaint
 
-private enum class EdTab(val label: String, val title: String, val icon: ZI) {
-    CLIP("کلیپ", "ویرایش کلیپ", ZI.Scissors),
-    KEY("کروما", "کروما کی (پرده سبز)", ZI.Spark),
-    LAYER("لایه", "لایه‌های متن و عکس", ZI.Layers),
-    AUDIO("صدا", "صدا و موسیقی", ZI.Music),
-    CAPTIONS("زیرنویس", "زیرنویس‌ها", ZI.Captions),
-    STYLE("استایل", "استایل زیرنویس", ZI.Palette),
-    FONT("فونت", "فونت زیرنویس", ZI.Type),
-    POSITION("جایگاه", "جایگاه و اندازه", ZI.Position),
-    FILTER("فیلتر", "فیلتر و رنگ", ZI.Filters),
-    EDIT("ادیت", "ویرایش خودکار", ZI.Tune)
+private enum class EdGroup(val label: String) {
+    CLIP("کلیپ"), LAYER("لایه"), AUDIO("صدا"), TEXT("متن"), FX("جلوه‌ها")
+}
+
+private enum class EdTab(val label: String, val title: String, val icon: ZI, val group: EdGroup) {
+    CLIP("کلیپ", "ویرایش کلیپ", ZI.Scissors, EdGroup.CLIP),
+    EDIT("ادیت", "ویرایش خودکار", ZI.Tune, EdGroup.CLIP),
+    LAYER("لایه", "لایه‌های متن و عکس", ZI.Layers, EdGroup.LAYER),
+    AUDIO("صدا", "صدا و موسیقی", ZI.Music, EdGroup.AUDIO),
+    CAPTIONS("زیرنویس", "زیرنویس‌ها", ZI.Captions, EdGroup.TEXT),
+    STYLE("استایل", "استایل زیرنویس", ZI.Palette, EdGroup.TEXT),
+    FONT("فونت", "فونت زیرنویس", ZI.Type, EdGroup.TEXT),
+    POSITION("جایگاه", "جایگاه و اندازه", ZI.Position, EdGroup.TEXT),
+    KEY("کروما", "کروما کی (پرده سبز)", ZI.Spark, EdGroup.FX),
+    FILTER("فیلتر", "فیلتر و رنگ", ZI.Filters, EdGroup.FX)
 }
 
 private class PlayerHolder {
@@ -232,6 +236,7 @@ fun EditorScreen(
     // Open the editor on the timeline first. Tool panels are opened only when the
     // user chooses a tool, keeping the preview and timeline visible on small screens.
     var tab by remember { mutableStateOf(EdTab.CLIP) }
+    var toolGroup by remember { mutableStateOf(EdGroup.CLIP) }
     var panelOpen by remember { mutableStateOf(false) }
     var showExport by remember { mutableStateOf(false) }
     var showRename by remember { mutableStateOf(false) }
@@ -871,17 +876,20 @@ fun EditorScreen(
                 if (op != null) {
                     scrub(op.startMs)
                     tab = EdTab.CAPTIONS
+                    toolGroup = EdGroup.TEXT
                     panelOpen = true
                 }
             },
             onLayer = { id ->
                 vm.selectLayer(id)
                 tab = EdTab.LAYER
+                toolGroup = EdGroup.LAYER
                 panelOpen = true
             },
             onAudio = { id ->
                 vm.selectAudio(id)
                 tab = EdTab.AUDIO
+                toolGroup = EdGroup.AUDIO
                 panelOpen = true
             }
         )
@@ -1017,10 +1025,33 @@ fun EditorScreen(
         // ================= tool dock =================
         Column(Modifier.fillMaxWidth().background(Z.Surface)) {
             ZHairline()
-            // the dock scrolls sideways: 6.5 items fit, so the half item at the edge shows there are more tools
+            // First row: clear tool categories. Second row: only tools in the active category.
+            Row(
+                Modifier.fillMaxWidth().height(36.dp).horizontalScroll(rememberScrollState()).padding(horizontal = Z.S3),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+                EdGroup.values().forEach { group ->
+                    val selected = toolGroup == group
+                    Box(
+                        Modifier.clip(RoundedCornerShape(50)).background(if (selected) Z.AccentSoft else Z.Surface2)
+                            .then(if (selected) Modifier.border(1.dp, Z.AccentLine, RoundedCornerShape(50)) else Modifier)
+                            .clickable {
+                                toolGroup = group
+                                if (tab.group != group) panelOpen = false
+                            }
+                            .padding(horizontal = 13.dp, vertical = 6.dp)
+                    ) {
+                        Txt(group.label, style = ZType.caption, color = if (selected) Z.Accent else Z.TextSec, maxLines = 1)
+                    }
+                }
+            }
+            val visibleTools = EdTab.values().filter { it.group == toolGroup }
             val itemW = 64.dp
-            Row(Modifier.fillMaxWidth().height(68.dp).horizontalScroll(rememberScrollState()).padding(horizontal = Z.S2)) {
-                EdTab.values().forEach { t ->
+            Row(
+                Modifier.fillMaxWidth().height(66.dp).horizontalScroll(rememberScrollState()).padding(horizontal = Z.S2)
+            ) {
+                visibleTools.forEach { t ->
                     ToolItem(t.icon, t.label, selected = panelOpen && tab == t, action = false, modifier = Modifier.width(itemW)) {
                         if (panelOpen && tab == t) {
                             panelOpen = false

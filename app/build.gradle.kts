@@ -14,8 +14,8 @@ android {
         applicationId = "app.zircut"
         minSdk = 29
         targetSdk = 34
-        versionCode = 242
-        versionName = "0.1.242"
+        versionCode = 243
+        versionName = "0.1.243"
 
         ndk { abiFilters += listOf("arm64-v8a") }
     }
