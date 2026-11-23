@@ -40,7 +40,9 @@ data class KeyLook(
     /** 0 = colour key (green screen), 1 = AI subject cut-out (fix236) */
     val ai: Int = 0,
     val aiInvert: Boolean = false,
-    val aiEdge: Float = 0.5f
+    val aiEdge: Float = 0.5f,
+    /** fix239: parts kept by the AI (bit mask: 1 hair, 2 body skin, 4 face skin, 8 clothes, 16 accessories). 0 = the whole person (old behaviour) */
+    val aiParts: Int = 0
 )
 
 /** The ONE definition of the key maths. The Kotlin version below and the two shaders (export GLSL, preview AGSL) use the same formulas. */
@@ -301,7 +303,7 @@ private class ChromaKeyProgram(private val ctx: Context, private val keyRgb: Flo
         }
         if (aiOn) {
             try {
-                aiSeg = AiSegmenter(ctx)
+                aiSeg = AiSegmenter(ctx, k.aiParts != 0)
                 val gp = GlProgram(VERT, FRAG_COPY)
                 gp.setBufferAttribute("aFramePosition", GlUtil.getNormalizedCoordinateBounds(), GlUtil.HOMOGENEOUS_COORDINATE_VECTOR_SIZE)
                 copyProg = gp
@@ -341,7 +343,7 @@ private class ChromaKeyProgram(private val ctx: Context, private val keyRgb: Flo
             }
         }
         val bmp = Bitmap.createBitmap(px, sw, sh, Bitmap.Config.ARGB_8888)
-        val m = try { seg.foreground(bmp) } finally { bmp.recycle() } ?: return
+        val m = try { seg.foreground(bmp, k.aiParts) } finally { bmp.recycle() } ?: return
         val shaped = AiMaskMath.shapeAll(m, k.aiInvert, k.aiEdge)
         // light temporal smoothing: less flicker between frames
         val pv = prevMask
