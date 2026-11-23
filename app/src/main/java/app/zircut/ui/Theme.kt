@@ -303,7 +303,7 @@ fun Modifier.press(enabled: Boolean = true, onClick: () -> Unit): Modifier = com
 
 enum class ZI {
     Plus, Minus, Close, Check, Chevron, Arrow, Play, Pause, SkipPrev, SkipNext, Tune, Export, Share,
-    Captions, Palette, Type, Position, Filters, Scissors, Trash, Merge, Wave, Expand, Phone,
+    Captions, Palette, Type, Position, Filters, Scissors, Trash, Merge, Wave, Expand, Phone, FrameBack, FrameForward,
     Globe, Info, Download, Home, Film, Spark, Undo, File, Search, More, Edit, Copy, Redo, Layers, Music, Mic
 }
 
@@ -346,6 +346,8 @@ private fun DrawScope.drawZIcon(icon: ZI, c: Color, u: Float) {
         ZI.Pause -> { rrect(6.5f, 5f, 3.8f, 14f, 1.2f, true); rrect(13.7f, 5f, 3.8f, 14f, 1.2f, true) }
         ZI.SkipPrev -> { line(6f, 6f, 6f, 18f); poly(18f, 6f, 9.5f, 12f, 18f, 18f, close = true, fill = true) }
         ZI.SkipNext -> { line(18f, 6f, 18f, 18f); poly(6f, 6f, 14.5f, 12f, 6f, 18f, close = true, fill = true) }
+        ZI.FrameBack -> { line(5f, 5f, 5f, 19f); poly(18f, 6f, 9f, 12f, 18f, 18f, close = true, fill = true) }
+        ZI.FrameForward -> { line(19f, 5f, 19f, 19f); poly(6f, 6f, 15f, 12f, 6f, 18f, close = true, fill = true) }
         ZI.Tune -> {
             line(4f, 7f, 20f, 7f); line(4f, 12f, 20f, 12f); line(4f, 17f, 20f, 17f)
             drawCircle(Z.Bg, 2.8f * u, o(15f, 7f)); ring(15f, 7f, 2.3f)

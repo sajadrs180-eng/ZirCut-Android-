@@ -697,3 +697,9 @@ fix232 built on top of fix231; builds of fix229-232 not confirmed when fix233 wa
 - Editor tool dock spacing and selected-state styling refined; all existing tool tabs and panel routing remain unchanged.
 - No editing feature was intentionally removed. Auto subtitles / online transcription remain out of active UI as previously required.
 - Build and device verification are still pending; this source snapshot is not represented as a tested APK.
+
+## UI refresh — 0.1.245 (source change, build not yet verified)
+- Added dedicated frame-back / frame-forward buttons in the preview transport, separate from previous/next subtitle navigation.
+- Frame stepping uses the detected source FPS and the edited-timeline scrub path; it pauses playback before seeking.
+- No export or clip-speed behavior intentionally changed.
+- Build and phone verification are pending.

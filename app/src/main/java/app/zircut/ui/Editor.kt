@@ -813,13 +813,15 @@ fun EditorScreen(
                     Txt("  /  ", style = ZType.mono, color = Z.TextTer, size = 13.sp)
                     Txt(faTime(kept), style = ZType.mono, color = Z.TextSec, size = 13.sp)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(Z.S2), verticalAlignment = Alignment.CenterVertically) {
-                    ZIconButton(ZI.SkipPrev, { prevCaption() }, enabled = ui.phrases.isNotEmpty(), size = 20.dp)
+                Row(horizontalArrangement = Arrangement.spacedBy(Z.S1), verticalAlignment = Alignment.CenterVertically) {
+                    ZIconButton(ZI.SkipPrev, { prevCaption() }, enabled = ui.phrases.isNotEmpty(), size = 17.dp, box = 32.dp)
+                    ZIconButton(ZI.FrameBack, { stepFrames(-1) }, enabled = map.total > 0L, size = 17.dp, box = 32.dp, tint = Z.TextSec)
                     ZIconButton(
                         if (playing) ZI.Pause else ZI.Play, { toggle() },
                         bg = Z.Text, tint = Z.Bg, box = 44.dp, size = 22.dp, round = true
                     )
-                    ZIconButton(ZI.SkipNext, { nextCaption() }, enabled = ui.phrases.isNotEmpty(), size = 20.dp)
+                    ZIconButton(ZI.FrameForward, { stepFrames(1) }, enabled = map.total > 0L, size = 17.dp, box = 32.dp, tint = Z.TextSec)
+                    ZIconButton(ZI.SkipNext, { nextCaption() }, enabled = ui.phrases.isNotEmpty(), size = 17.dp, box = 32.dp)
                 }
                 Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
                     ZIconButton(ZI.Minus, { tlScale = (tlScale / 1.4f).coerceAtLeast(14f) }, size = 18.dp, box = 36.dp, tint = Z.TextSec)
