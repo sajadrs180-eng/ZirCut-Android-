@@ -261,12 +261,12 @@ fun ChromaKeyPanel(
     }
     // AI subject mask of the grabbed frame (raw probability; computed once per frame, shaped by the sliders below)
     var aiFailed by remember(clipIndex) { mutableStateOf<String?>(null) }
-    val aiRaw by produceState<AiMask?>(null, small, k.ai == 1 && k.on) {
+    val aiRaw by produceState<AiMask?>(null, small, k.ai == 1 && k.on, k.aiParts) {
         val sm = small
         value = if (sm == null || k.ai != 1 || !k.on) null else withContext(Dispatchers.Default) {
             try {
                 aiFailed = null
-                AiSegmenter.once(ctx, sm)
+                AiSegmenter.once(ctx, sm, k.aiParts)
             } catch (e: Throwable) {
                 aiFailed = e.message ?: "خطا"
                 null
@@ -309,6 +309,18 @@ fun ChromaKeyPanel(
             KLabel("هوش مصنوعی سوژه‌ی اصلی (آدم) را جدا می‌کند و بقیه را با پس‌زمینه‌ی انتخابی عوض می‌کند. کاملاً روی گوشی و بدون اینترنت کار می‌کند.")
             KChip("برعکس‌کردن انتخاب (پس‌زمینه بماند، سوژه برود)", k.aiInvert) { setKey(k.copy(on = true, aiInvert = !k.aiInvert)) }
             KSlider("نرمی لبه‌ی سوژه", k.aiEdge) { setKey(k.copy(on = true, aiEdge = it)) }
+            if (AiSegmenter.multiAvailable(ctx)) {
+                KLabel("بخش‌هایی که نگه داشته شوند (تشخیص مو و بدن)", strong = true)
+                val partLabels = listOf("مو", "پوست بدن", "پوست صورت", "لباس", "وسایل و اکسسوری")
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item(key = "pp0") { KChip("کل سوژه", k.aiParts == 0) { setKey(k.copy(on = true, aiParts = 0)) } }
+                    items(5) { i ->
+                        val bit = 1 shl i
+                        KChip(partLabels[i], (k.aiParts and bit) != 0) { setKey(k.copy(on = true, aiParts = k.aiParts xor bit)) }
+                    }
+                }
+                KLabel("هیچ بخشی انتخاب نشود = کل سوژه. مثلاً فقط «مو» را بزن تا فقط مو نگه داشته شود.")
+            }
             val fe = aiFailed
             if (fe != null) KLabel("مدل هوش مصنوعی اجرا نشد: " + fe)
         }
