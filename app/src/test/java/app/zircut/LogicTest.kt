@@ -423,6 +423,21 @@ class LogicTest {
     }
 
     @org.junit.Test
+    fun aiMixParts() {
+        // one pixel: background .1, hair .6, body .2, face .1, clothes 0, others 0
+        val pr = listOf(floatArrayOf(0.1f), floatArrayOf(0.6f), floatArrayOf(0.2f), floatArrayOf(0.1f), floatArrayOf(0f), floatArrayOf(0f))
+        org.junit.Assert.assertEquals(0.9f, app.zircut.core.AiMaskMath.mixParts(pr, 0)[0], 1e-4f)   // whole person = 1 - background
+        org.junit.Assert.assertEquals(0.6f, app.zircut.core.AiMaskMath.mixParts(pr, 1)[0], 1e-4f)   // hair only
+        org.junit.Assert.assertEquals(0.8f, app.zircut.core.AiMaskMath.mixParts(pr, 1 or 2)[0], 1e-4f) // hair + body skin
+        org.junit.Assert.assertEquals(0f, app.zircut.core.AiMaskMath.mixParts(pr, 8)[0], 1e-4f)     // clothes only: none here
+        org.junit.Assert.assertEquals(0.9f, app.zircut.core.AiMaskMath.mixParts(pr, 7)[0], 1e-4f)    // hair + body + face = .6+.2+.1
+        val over = listOf(floatArrayOf(0f), floatArrayOf(0.8f), floatArrayOf(0.8f), floatArrayOf(0f), floatArrayOf(0f), floatArrayOf(0f))
+        org.junit.Assert.assertEquals(1f, app.zircut.core.AiMaskMath.mixParts(over, 3)[0], 1e-4f)   // clamp at 1
+        val k = app.zircut.core.KeyLook()
+        org.junit.Assert.assertEquals(0, k.aiParts)
+    }
+
+    @org.junit.Test
     fun aiMaskShape() {
         // solid subject stays 1, solid background stays 0, invert swaps them, middle stays about 0.5
         org.junit.Assert.assertEquals(1f, app.zircut.core.AiMaskMath.shape(1f, false, 0.5f), 1e-4f)
