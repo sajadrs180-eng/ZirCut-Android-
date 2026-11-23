@@ -1485,18 +1485,26 @@ private fun Timeline(
                 val edge = if (cur) Z.Accent else if (photo) Z.BorderStrong else Z.AccentLine
                 drawRoundRect(fill, Offset(x1, lane1Top), Size(bw, laneH), r)
                 drawRoundRect(edge, Offset(x1, lane1Top), Size(bw, laneH), r, style = Stroke((if (cur) 1.6f else 1f) * d))
-                if (cur && bw > 28f * d) {
-                    val gripColor = Z.Text
-                    drawRoundRect(gripColor, Offset(x1 + 2f * d, lane1Top + 9f * d), Size(3f * d, 14f * d), CornerRadius(2f * d, 2f * d))
-                    drawRoundRect(gripColor, Offset(x1 + bw - 5f * d, lane1Top + 9f * d), Size(3f * d, 14f * d), CornerRadius(2f * d, 2f * d))
+                // Visible trim grips on every clip make the editable edges discoverable;
+                // the selected clip gets stronger contrast, while all clips remain draggable.
+                if (bw > 14f * d) {
+                    val gripColor = if (cur) Z.Text else Z.AccentLine
+                    val gripH = if (cur) 16f else 12f
+                    val gripY = lane1Top + (laneH - gripH * d) / 2f
+                    drawRoundRect(gripColor, Offset(x1 + 2f * d, gripY), Size(3f * d, gripH * d), CornerRadius(2f * d, 2f * d))
+                    drawRoundRect(gripColor, Offset(x1 + bw - 5f * d, gripY), Size(3f * d, gripH * d), CornerRadius(2f * d, 2f * d))
                 }
                 val tx = minOf(x1 + bw, w) - 8f * d
                 if (tx - maxOf(x1, 0f) > 56f * d) {
-                    paint.textSize = 11f * d
+                    paint.textSize = 10.5f * d
                     paint.textAlign = AndroidPaint.Align.RIGHT
-                    paint.color = Z.Accent.toArgb()
-                    val label = app.zircut.i18n.Lang.tr((if (photo) "عکس " else "ویدیو ") + fa(i + 1) + (if (sg.speed != 1f) "  " + speedLabel(sg.speed) else ""))
-                    drawIntoCanvas { it.nativeCanvas.drawText(label, tx, lane1Top + laneH / 2f + 4f * d, paint) }
+                    paint.color = (if (cur) Z.Accent else Z.TextSec).toArgb()
+                    val baseLabel = app.zircut.i18n.Lang.tr((if (photo) "عکس " else "ویدیو ") + fa(i + 1))
+                    val speed = if (sg.speed != 1f) " · " + speedLabel(sg.speed) else ""
+                    val duration = " · " + faTime(sg.outLen)
+                    val label = baseLabel + speed + duration
+                    val shown = TextUtils.ellipsize(label, paint, bw - 18f * d, TextUtils.TruncateAt.END).toString()
+                    drawIntoCanvas { it.nativeCanvas.drawText(shown, tx, lane1Top + laneH / 2f + 4f * d, paint) }
                 }
             }
 
