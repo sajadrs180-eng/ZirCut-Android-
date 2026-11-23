@@ -174,8 +174,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import android.graphics.Paint as AndroidPaint
 
-private enum class EdGroup(val label: String) {
-    CLIP("کلیپ"), LAYER("لایه"), AUDIO("صدا"), TEXT("متن"), FX("جلوه‌ها")
+private enum class EdGroup(val label: String, val icon: ZI) {
+    CLIP("کلیپ", ZI.Scissors),
+    LAYER("لایه", ZI.Layers),
+    AUDIO("صدا", ZI.Music),
+    TEXT("متن", ZI.Type),
+    FX("جلوه‌ها", ZI.Spark)
 }
 
 private enum class EdTab(val label: String, val title: String, val icon: ZI, val group: EdGroup) {
@@ -1033,16 +1037,35 @@ fun EditorScreen(
             ) {
                 EdGroup.values().forEach { group ->
                     val selected = toolGroup == group
-                    Box(
-                        Modifier.clip(RoundedCornerShape(50)).background(if (selected) Z.AccentSoft else Z.Surface2)
+                    val chipBg by animateColorAsState(
+                        if (selected) Z.AccentSoft else Z.Surface2,
+                        tween(180),
+                        label = "toolGroupBg"
+                    )
+                    val chipTint by animateColorAsState(
+                        if (selected) Z.Accent else Z.TextSec,
+                        tween(180),
+                        label = "toolGroupTint"
+                    )
+                    Row(
+                        Modifier.clip(RoundedCornerShape(50))
+                            .background(chipBg)
                             .then(if (selected) Modifier.border(1.dp, Z.AccentLine, RoundedCornerShape(50)) else Modifier)
                             .clickable {
                                 toolGroup = group
                                 if (tab.group != group) panelOpen = false
                             }
-                            .padding(horizontal = 13.dp, vertical = 6.dp)
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Txt(group.label, style = ZType.caption, color = if (selected) Z.Accent else Z.TextSec, maxLines = 1)
+                        ZIcon(group.icon, tint = chipTint, size = 15.dp)
+                        Txt(
+                            group.label,
+                            style = if (selected) ZType.labelStrong else ZType.caption,
+                            color = chipTint,
+                            maxLines = 1
+                        )
                     }
                 }
             }
@@ -1113,7 +1136,7 @@ private fun ToolItem(icon: ZI, label: String, selected: Boolean, action: Boolean
         Box(
             Modifier.size(width = 46.dp, height = 34.dp).clip(RoundedCornerShape(11.dp))
                 .background(bg)
-                .then(if (selected) Modifier.border(1.dp, Z.AccentLine, RoundedCornerShape(11.dp)) else Modifier),
+                .then(if (selected) Modifier.border(1.2.dp, Z.AccentLine, RoundedCornerShape(11.dp)) else Modifier),
             contentAlignment = Alignment.Center
         ) { ZIcon(icon, tint = iconTint, size = 20.dp) }
         Spacer(Modifier.height(3.dp))
