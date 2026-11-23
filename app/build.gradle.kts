@@ -14,8 +14,8 @@ android {
         applicationId = "app.zircut"
         minSdk = 29
         targetSdk = 34
-        versionCode = 238
-        versionName = "0.1.238"
+        versionCode = 239
+        versionName = "0.1.239"
 
         ndk { abiFilters += listOf("arm64-v8a") }
     }
@@ -53,7 +53,28 @@ val downloadAiModels by tasks.registering {
         check(aiModelFile.length() > 100_000L) { "selfie_segmenter.tflite download failed (file too small). Put the file in app/src/main/assets/ai/ by hand." }
     }
 }
-tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(downloadAiModels) }
+
+// fix239: second model (hair / body / face / clothes). OPTIONAL: if the download fails the build still works and the app simply hides
+// the "parts" chips (AiSegmenter.multiAvailable). Put the file in app/src/main/assets/ai/ by hand to make it permanent.
+val aiMultiFile = layout.projectDirectory.file("src/main/assets/ai/selfie_multiclass_256x256.tflite").asFile
+val downloadAiModelsMulti by tasks.registering {
+    outputs.file(aiMultiFile)
+    outputs.upToDateWhen { aiMultiFile.exists() && aiMultiFile.length() > 1_000_000L }
+    doLast {
+        try {
+            aiMultiFile.parentFile.mkdirs()
+            val url = URL("https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite")
+            url.openStream().use { input: java.io.InputStream ->
+                aiMultiFile.outputStream().use { output: java.io.OutputStream -> input.copyTo(output) }
+            }
+            check(aiMultiFile.length() > 1_000_000L) { "multi-class model too small" }
+        } catch (e: Exception) {
+            aiMultiFile.delete()
+            logger.warn("WARNING: selfie_multiclass_256x256.tflite not downloaded (" + e.message + "). The hair/body parts feature will be hidden in this build.")
+        }
+    }
+}
+tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(downloadAiModels, downloadAiModelsMulti) }
 
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
