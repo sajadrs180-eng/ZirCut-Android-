@@ -180,7 +180,7 @@ class ProjectStore(private val ctx: Context) {
                     val kk = lk.key
                     ja.put(if (kk.on) 1 else 0).put(kk.color.toLong() and 0xFFFFFFFFL).put(kk.tol.toDouble()).put(kk.soft.toDouble())
                         .put(kk.spill.toDouble()).put(kk.bgMode).put(kk.bgColor.toLong() and 0xFFFFFFFFL).put(kk.bgFile)
-                        .put(kk.ai).put(if (kk.aiInvert) 1 else 0).put(kk.aiEdge.toDouble())
+                        .put(kk.ai).put(if (kk.aiInvert) 1 else 0).put(kk.aiEdge.toDouble()).put(kk.aiParts)
                 }
                 a.put(ja)
             }
@@ -528,7 +528,8 @@ class ProjectStore(private val ctx: Context) {
                     bgFile = p.optString(18, "").takeIf { n -> Regex("keybg_\\d+\\.(jpg|png)").matches(n) } ?: "",
                     ai = p.optInt(19, 0).coerceIn(0, 1),
                     aiInvert = p.optInt(20, 0) == 1,
-                    aiEdge = p.optDouble(21, 0.5).toFloat().coerceIn(0f, 1f)
+                    aiEdge = p.optDouble(21, 0.5).toFloat().coerceIn(0f, 1f),
+                    aiParts = p.optInt(22, 0).coerceIn(0, 31)
                 )
             )
             if (e - s >= 50L) out.add(Range(s, e, sp, tr, trMs, look))
