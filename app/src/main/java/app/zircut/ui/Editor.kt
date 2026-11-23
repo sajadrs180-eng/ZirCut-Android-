@@ -1016,8 +1016,8 @@ fun EditorScreen(
         Column(Modifier.fillMaxWidth().background(Z.Surface)) {
             ZHairline()
             // the dock scrolls sideways: 6.5 items fit, so the half item at the edge shows there are more tools
-            val itemW = (LocalConfiguration.current.screenWidthDp.dp - Z.S4) / 6.5f
-            Row(Modifier.fillMaxWidth().height(60.dp).horizontalScroll(rememberScrollState()).padding(horizontal = Z.S2)) {
+            val itemW = 64.dp
+            Row(Modifier.fillMaxWidth().height(68.dp).horizontalScroll(rememberScrollState()).padding(horizontal = Z.S2)) {
                 EdTab.values().forEach { t ->
                     ToolItem(t.icon, t.label, selected = panelOpen && tab == t, action = false, modifier = Modifier.width(itemW)) {
                         if (panelOpen && tab == t) {
@@ -1073,12 +1073,14 @@ private fun ToolItem(icon: ZI, label: String, selected: Boolean, action: Boolean
         if (action) Z.Accent else if (selected) Z.AccentSoft else Color.Transparent, tween(160), label = "toolBg"
     )
     Column(
-        modifier.fillMaxHeight().press(true, onClick),
+        modifier.fillMaxHeight().press(true, onClick).padding(horizontal = 2.dp, vertical = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Box(
-            Modifier.size(width = 44.dp, height = 30.dp).clip(RoundedCornerShape(9.dp)).background(bg),
+            Modifier.size(width = 46.dp, height = 34.dp).clip(RoundedCornerShape(11.dp))
+                .background(bg)
+                .then(if (selected) Modifier.border(1.dp, Z.AccentLine, RoundedCornerShape(11.dp)) else Modifier),
             contentAlignment = Alignment.Center
         ) { ZIcon(icon, tint = iconTint, size = 20.dp) }
         Spacer(Modifier.height(3.dp))

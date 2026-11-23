@@ -689,3 +689,11 @@ fix232 built on top of fix231; builds of fix229-232 not confirmed when fix233 wa
   AI step 2 plan (about 60 MB total, nothing bundled until its code exists): tap-to-select object mask (MediaPipe interactive segmenter), object detector for «subject», simple tracking of the mask between frames; models are fetched at BUILD time like `selfie_segmenter.tflite`.
 
 - fix238 (source/APK mismatch fix; no feature changes). ROOT CAUSE: the old repo-root workflow ran `ls fix*.zip` and unpacked the files over each other. (1) It never matched `ZirCut-fix*.zip`, so fix202-222 and fix229-237 were never applied: CI built fix228 (no language packs, which arrived in fix234). (2) Unpacking over a tree never deletes files, so Whisper/CloudTranscriber/ModelManager (removed in fix235) stayed in the build. (3) versionCode/versionName were 1 / 0.1.0 in every snapshot, so no APK could be told apart. FIX: one flat source tree, no ZIP unpacking in the workflow; a "Source check" step fails the build if a .zip is in the repo root or app/src/main/cpp exists; versionCode 238 / versionName 0.1.238; artifact name carries run number + commit. Also: the failure hint "speech model not ready, check internet" (STT leftover) is replaced by an AI-model hint (+ en/ar/tr translations). Unused STT helpers (Planner.clean, AudioDecoder.chunkSpeech, AacEncoder, Options.language/removeFillers) have no UI path and are kept for project-file compatibility. Clean Gradle build NOT run here (no Android SDK/network): build and phone test pending.
+
+
+## UI refresh — 0.1.240 (source change, build not yet verified)
+
+- Home screen hierarchy refreshed: clearer project creation action, compact continue-editing card, cleaner project library and export list. Existing project actions and callbacks are preserved.
+- Editor tool dock spacing and selected-state styling refined; all existing tool tabs and panel routing remain unchanged.
+- No editing feature was intentionally removed. Auto subtitles / online transcription remain out of active UI as previously required.
+- Build and device verification are still pending; this source snapshot is not represented as a tested APK.

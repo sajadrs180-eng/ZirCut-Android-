@@ -57,85 +57,137 @@ fun HomeScreen(
     var query by remember { mutableStateOf("") }
     val projects = ui.projects
     val shown = if (query.isBlank()) projects else projects.filter { it.name.contains(query.trim(), ignoreCase = true) }
+    val latest = projects.firstOrNull()
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = Z.S5, vertical = Z.S4),
+        contentPadding = PaddingValues(horizontal = Z.S4, vertical = Z.S3),
         verticalArrangement = Arrangement.spacedBy(Z.S3)
     ) {
-        // ---- header ----
         item {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                ZMark(40.dp)
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = Z.S2),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier.size(46.dp).clip(RoundedCornerShape(14.dp)).background(Z.Surface2)
+                        .border(Z.Hair, Z.Border, RoundedCornerShape(14.dp)),
+                    contentAlignment = Alignment.Center
+                ) { ZMark(34.dp) }
                 Spacer(Modifier.size(Z.S3))
                 Column(Modifier.weight(1f)) {
-                    Txt("زیرکات", style = ZType.title)
-                    Txt("استودیوی ادیت ویدیو", style = ZType.caption, color = Z.TextSec)
+                    Txt("ZirCut", style = ZType.title)
+                    Txt("استودیوی تدوین ویدیو", style = ZType.caption, color = Z.TextSec)
                 }
                 ZIconButton(
-                    ZI.Tune, onSettings, bg = Z.Surface2, box = 44.dp, size = Z.IconMd,
+                    ZI.Tune, onSettings, bg = Z.Surface2, box = 42.dp, size = Z.IconMd,
                     modifier = Modifier.border(Z.Hair, Z.Border, RoundedCornerShape(Z.RSm))
                 )
             }
         }
 
-        // ---- primary action ----
         item {
-            Spacer(Modifier.height(Z.S2))
-            val shape = RoundedCornerShape(Z.RMd)
-            Row(
-                Modifier.fillMaxWidth().clip(shape).background(Z.Accent).press(true, onNew).padding(Z.S5),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(Z.RLg)).background(Z.Surface)
+                    .border(Z.Hair, Z.Border, RoundedCornerShape(Z.RLg)).padding(Z.S4),
+                verticalArrangement = Arrangement.spacedBy(Z.S3)
             ) {
-                Column(Modifier.weight(1f)) {
-                    Txt("پروژه جدید", style = ZType.title, color = Z.OnAccent)
-                    Txt("ویدیو رو وارد کن و ادیت رو شروع کن", style = ZType.caption, color = Color(0xCC04141D))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Txt("از ایده تا ویدیو", style = ZType.title)
+                        Txt("پروژه‌ات را بساز و دقیق ویرایش کن", style = ZType.caption, color = Z.TextSec)
+                    }
+                    Box(
+                        Modifier.size(42.dp).clip(RoundedCornerShape(13.dp)).background(Z.AccentSoft),
+                        contentAlignment = Alignment.Center
+                    ) { ZIcon(ZI.Film, tint = Z.Accent, size = Z.IconLg) }
                 }
-                Box(Modifier.size(48.dp).clip(CircleShape).background(Z.OnAccent), contentAlignment = Alignment.Center) {
-                    ZIcon(ZI.Plus, tint = Z.Accent, size = Z.IconLg)
+                Row(
+                    Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(Z.RSm))
+                        .background(Z.Accent).press(true, onNew).padding(horizontal = Z.S4),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ZIcon(ZI.Plus, tint = Z.OnAccent, size = 22.dp)
+                    Spacer(Modifier.width(Z.S2))
+                    Txt("ساخت پروژه جدید", style = ZType.button, color = Z.OnAccent, modifier = Modifier.weight(1f))
+                    ZIcon(ZI.Arrow, tint = Z.OnAccent, size = 18.dp)
                 }
             }
         }
 
-        // ---- continue editing ----
-        val latest = projects.firstOrNull()
         if (latest != null && query.isBlank()) {
-            item { ZSectionLabel("ادامه ویرایش", Modifier.padding(top = Z.S3)) }
             item {
-                ZCard(Modifier.fillMaxWidth(), padding = PaddingValues(Z.S2), onClick = { onOpenProject(latest) }) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Z.S3)) {
-                        ProjectThumb(thumbPath(latest.id), Modifier.size(width = 56.dp, height = 74.dp).clip(RoundedCornerShape(8.dp)))
-                        Column(Modifier.weight(1f)) {
+                Row(
+                    Modifier.fillMaxWidth().padding(top = Z.S1),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ZSectionLabel("ادامه ویرایش", Modifier.weight(1f))
+                    Txt("آخرین پروژه", style = ZType.caption, color = Z.TextTer)
+                }
+            }
+            item {
+                ZCard(
+                    Modifier.fillMaxWidth(),
+                    padding = PaddingValues(Z.S2),
+                    onClick = { onOpenProject(latest) }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Z.S3)
+                    ) {
+                        ProjectThumb(
+                            thumbPath(latest.id),
+                            Modifier.size(width = 66.dp, height = 76.dp)
+                                .clip(RoundedCornerShape(Z.RSm))
+                        )
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Txt(app.zircut.i18n.Lang.raw(latest.name), style = ZType.bodyStrong, maxLines = 1)
                             Txt(meta(latest), style = ZType.caption, color = Z.TextSec, maxLines = 1)
-                            Txt("آخرین ویرایش " + ago(latest.updatedAt), style = ZType.caption, color = Z.TextTer, maxLines = 1)
+                            Txt("ویرایش " + ago(latest.updatedAt), style = ZType.micro, color = Z.TextTer, maxLines = 1)
                         }
-                        ZButton("ادامه", { onOpenProject(latest) }, compact = true)
+                        ZIconButton(
+                            ZI.Chevron, { onOpenProject(latest) },
+                            bg = Z.AccentSoft, tint = Z.Accent, box = 38.dp, size = 19.dp
+                        )
                     }
                 }
             }
         }
 
-        // ---- project library ----
         item {
-            Row(Modifier.fillMaxWidth().padding(top = Z.S3), verticalAlignment = Alignment.CenterVertically) {
-                ZSectionLabel("پروژه‌ها", Modifier.weight(1f))
-                if (projects.isNotEmpty()) Txt(fa(projects.size) + " پروژه", style = ZType.caption, color = Z.TextTer)
+            Row(
+                Modifier.fillMaxWidth().padding(top = Z.S2),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ZSectionLabel("کتابخانه پروژه‌ها", Modifier.weight(1f))
+                if (projects.isNotEmpty()) {
+                    Txt(fa(projects.size) + " پروژه", style = ZType.caption, color = Z.TextTer)
+                }
             }
         }
         if (projects.size >= 2) {
-            item { ZSearchField(query, { query = it }, "جستجوی پروژه") }
+            item { ZSearchField(query, { query = it }, "جستجو در پروژه‌ها") }
         }
         if (projects.isEmpty()) {
             item {
-                ZCard(Modifier.fillMaxWidth(), padding = PaddingValues(vertical = Z.S6, horizontal = Z.S4)) {
-                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(Modifier.size(44.dp).clip(RoundedCornerShape(Z.RSm)).background(Z.Surface3), contentAlignment = Alignment.Center) {
-                            ZIcon(ZI.Film, tint = Z.TextSec, size = Z.IconMd)
-                        }
-                        Spacer(Modifier.height(Z.S3))
+                ZCard(
+                    Modifier.fillMaxWidth(),
+                    padding = PaddingValues(vertical = Z.S6, horizontal = Z.S4)
+                ) {
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(Z.S2)
+                    ) {
+                        Box(
+                            Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Z.Surface3),
+                            contentAlignment = Alignment.Center
+                        ) { ZIcon(ZI.Film, tint = Z.TextSec, size = Z.IconLg) }
                         Txt("هنوز پروژه‌ای نداری", style = ZType.labelStrong)
-                        Txt("با «پروژه جدید» یک ویدیو وارد کن؛ پروژه خودکار ذخیره می‌شه.", style = ZType.caption, color = Z.TextSec)
+                        Txt(
+                            "با ساخت پروژه جدید، اولین ویدیوت را وارد کن.",
+                            style = ZType.caption, color = Z.TextSec
+                        )
                     }
                 }
             }
@@ -152,18 +204,17 @@ fun HomeScreen(
             }
         }
 
-        // ---- exported videos ----
         if (ui.recent.isNotEmpty()) {
-            item { ZSectionLabel("ویدیوهای ساخته‌شده", Modifier.padding(top = Z.S3)) }
+            item { ZSectionLabel("خروجی‌های اخیر", Modifier.padding(top = Z.S2)) }
             items(ui.recent, key = { it.uri }) { r ->
                 ZCard(Modifier.fillMaxWidth(), padding = PaddingValues(Z.S2), onClick = { onOpen(r) }) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Z.S3)) {
-                        Thumb(r.uri, Modifier.size(width = 44.dp, height = 58.dp).clip(RoundedCornerShape(8.dp)))
+                        Thumb(r.uri, Modifier.size(width = 46.dp, height = 58.dp).clip(RoundedCornerShape(Z.RSm)))
                         Column(Modifier.weight(1f)) {
                             Txt(app.zircut.i18n.Lang.raw(r.title), style = ZType.bodyStrong, maxLines = 1)
                             Txt(ago(r.time), style = ZType.caption, color = Z.TextSec)
                         }
-                        ZIconButton(ZI.Trash, { onDelete(r) }, tint = Z.Danger, box = 40.dp, size = Z.IconSm)
+                        ZIconButton(ZI.Trash, { onDelete(r) }, tint = Z.Danger, box = 38.dp, size = Z.IconSm)
                     }
                 }
             }
@@ -176,23 +227,32 @@ fun HomeScreen(
 private fun ProjectCard(p: ProjectMeta, thumb: String, modifier: Modifier, onOpen: () -> Unit, onMenu: () -> Unit) {
     val shape = RoundedCornerShape(Z.RMd)
     Column(
-        modifier.clip(shape).background(Z.Surface).border(Z.Hair, Z.Border, shape).press(true, onOpen),
+        modifier.clip(shape).background(Z.Surface)
+            .border(Z.Hair, Z.Border, shape).press(true, onOpen),
         verticalArrangement = Arrangement.spacedBy(Z.S2)
     ) {
-        Box(Modifier.fillMaxWidth().aspectRatio(0.82f)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(0.88f)) {
             ProjectThumb(thumb, Modifier.matchParentSize())
             Box(
-                Modifier.align(Alignment.BottomStart).padding(Z.S2).clip(RoundedCornerShape(6.dp))
-                    .background(Color(0xB3000000)).padding(horizontal = 7.dp, vertical = 2.dp)
-            ) { Txt(faTime(p.durationMs), style = ZType.mono, color = Color.White) }
+                Modifier.align(Alignment.BottomStart).padding(Z.S2)
+                    .clip(RoundedCornerShape(6.dp)).background(Color(0xCC111113))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Txt(faTime(p.durationMs), style = ZType.mono, color = Color.White)
+            }
             ZIconButton(
-                ZI.More, onMenu, tint = Color.White, bg = Color(0x80000000),
-                modifier = Modifier.align(Alignment.TopEnd).padding(Z.S2), box = 32.dp, size = 18.dp, round = true
+                ZI.More, onMenu, tint = Color.White, bg = Color(0x99000000),
+                modifier = Modifier.align(Alignment.TopEnd).padding(Z.S2),
+                box = 32.dp, size = 18.dp, round = true
             )
         }
-        Column(Modifier.padding(start = Z.S3, end = Z.S3, bottom = Z.S3)) {
+        Column(
+            Modifier.fillMaxWidth().padding(start = Z.S3, end = Z.S3, bottom = Z.S3),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Txt(app.zircut.i18n.Lang.raw(p.name), style = ZType.labelStrong, maxLines = 1)
-            Txt(ratioLabel(p.width, p.height) + "  ·  " + ago(p.updatedAt), style = ZType.caption, color = Z.TextSec, maxLines = 1)
+            Txt(ratioLabel(p.width, p.height), style = ZType.caption, color = Z.TextSec, maxLines = 1)
+            Txt(ago(p.updatedAt), style = ZType.micro, color = Z.TextTer, maxLines = 1)
         }
     }
 }
