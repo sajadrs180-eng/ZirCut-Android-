@@ -140,6 +140,8 @@ data class UiState(
     val duckMusic: Boolean = false,
     /** ripple editing: layers and audio clips after a clip change move with it (app setting, not saved in projects) */
     val ripple: Boolean = false,
+    /** timeline snapping (magnet) while dragging / trimming clips and layers (app setting, not saved in projects) */
+    val snap: Boolean = true,
     /** real waveforms (one byte per 20 ms) by audio file name */
     val waves: Map<String, ByteArray> = emptyMap(),
     /** short status/error line shown in the editor */
@@ -199,6 +201,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 themeId = prefs.getString("theme", "violet_blue") ?: "violet_blue",
                 styleId = prefs.getString("style", "zarbati") ?: "zarbati",
                 ripple = prefs.getBoolean("ripple", false),
+                snap = prefs.getBoolean("snap", true),
                 myTemplates = loadMyTemplates(),
                 layout = CapLayout(
                     x = prefs.getFloat("lx", 0.5f), y = prefs.getFloat("ly", 0.66f), mw = prefs.getFloat("lmw", 0.9f),
@@ -334,6 +337,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
             counts(n)
         }
+    }
+
+    fun setSnap(on: Boolean) {
+        prefs.edit().putBoolean("snap", on).apply()
+        _ui.update { it.copy(snap = on) }
     }
 
     fun setRipple(on: Boolean) {
@@ -489,7 +497,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * Changes one layer. Calls with the same [key] that follow each other closely (slider drags, typing,
      * finger gestures) become ONE undo step.
      */
-    fun editLayer(id: Int, key: String, change: (Layer) -> Layer) {
+    fun editLayer(id: Int, key: String, newStep: Boolean = false, change: (Layer) -> Layer) {
         val cur = _ui.value
         val i = cur.layers.indexOfFirst { it.id == id }
         if (i < 0) return
@@ -497,7 +505,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (cur.layers[i].locked && key != "lock" && key != "hide") return
         val now = System.currentTimeMillis()
         val k = "$id|$key"
-        if (k != lastEditKey || now - lastEditAt > 900L) {
+        // newStep: one finished drag on the timeline is always its own undo step, even right after another drag of the same layer
+        if (newStep || k != lastEditKey || now - lastEditAt > 900L) {
             pushHistory()
             lastEditKey = k
         }
@@ -529,7 +538,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      */
     fun editLayerAt(id: Int, key: String, atMs: Long, change: (Layer) -> Layer) {
         val l = _ui.value.layers.firstOrNull { it.id == id } ?: return
-        if (l.keys.isEmpty() || key !in POSE_KEYS) editLayer(id, key, change)
+        if (l.keys.isEmpty() || key !in POSE_KEYS) editLayer(id, key, change = change)
         else editLayer(id, key) { cur -> LayerKeys.edited(cur, atMs, change) }
     }
 
@@ -927,13 +936,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Changes one audio clip. Calls with the same [key] that follow each other closely (slider drags) are ONE undo step. */
-    fun editAudio(id: Int, key: String, change: (AudioClip) -> AudioClip) {
+    fun editAudio(id: Int, key: String, newStep: Boolean = false, change: (AudioClip) -> AudioClip) {
         val cur = _ui.value
         val i = cur.audio.indexOfFirst { it.id == id }
         if (i < 0) return
         val now = System.currentTimeMillis()
         val k = "a$id|$key"
-        if (k != lastEditKey || now - lastEditAt > 900L) {
+        // newStep: one finished drag on the timeline is always its own undo step, even right after another drag of the same clip
+        if (newStep || k != lastEditKey || now - lastEditAt > 900L) {
             pushHistory()
             lastEditKey = k
         }

@@ -5,6 +5,12 @@ Android video editor (Kotlin, Jetpack Compose, Media3 Transformer). Built only t
 
 Target: a CapCut-class editor, delivered in 8 parts. Every part is a full project snapshot zip (fix110, fix120, ...).
 
+## 0.1.246 — precision timeline (NOT yet built on a device)
+- New: `timeline/TimelineSnap.kt` (`TimelineSnap` = magnet logic, `TrimOps` = exact audio/layer trimming limits), `TimelineSnapTest` (21 tests, run with kotlinc 2.0.21 + JUnit 4.13.2).
+- `Editor.kt`: the timeline drag gesture now snaps, previews the range and shows the readout; magnet button; `MainViewModel`: `snap` app setting, `newStep` for one-undo-per-drag.
+- Details: docs/CHANGELOG-0.1.246.md. Test list: docs/TESTING.md section 12.
+- Known: Editor.kt/MainViewModel.kt changes are only syntax-checked (no Android SDK here); the first Gradle build may need small fixes.
+
 ## Parts
 
 | # | Part | Status |
