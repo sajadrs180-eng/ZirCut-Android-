@@ -54,15 +54,3 @@ Automated: `./gradlew testDebugUnitTest` (app/src/test/.../LogicTest.kt — pure
 5. Export: the keyed clip must look like the preview. «شفاف» exports as black (MP4 has no transparency). Compare edges, check sound/picture sync is unchanged.
 6. Undo/redo (a slider drag = one step); split the clip: both halves keep the key; reopen the project: the key and background are still there; remove the key from the clip.
 7. Mixed: key on clip 2 only, project grade/LUT on: the key still works (the key colour goes through the same grade); a photo clip shows the note «only video clips».
-
-## 12. Timeline snapping and precision trimming — 0.1.246
-1. Add a video with 2-3 clips, a text layer and a music clip. Magnet button (next to zoom) is blue = on. Long-press near the right edge of the music clip and drag: a clip-coloured frame follows, a pill shows the time and length.
-2. Drag the edge near the playhead: it catches (small vibration), a yellow line shows, the pill says «چسبیده به پلی‌هد». Keep the finger moving slightly: the edge stays stuck, no flicker. Move away: it lets go smoothly.
-3. Repeat toward: start of the project, end of the project, a video clip joint, a layer edge, another audio clip edge. Each shows its own label.
-4. Move a whole layer / audio clip (long-press the middle): either of its edges snaps; it cannot leave 0..project end.
-5. Trim an audio clip to the shortest possible: it stops at the minimum length. Trim its start: the sound stays in place (play it). Try to lengthen the end past the file's length: it stops at the file end.
-6. Zoom in a lot and out a lot: the catch distance feels the same on screen. Scroll and zoom stay smooth.
-7. Turn the magnet off: no catching, no yellow line; the pill and limits still work. Turn off, close and reopen the app: it stays off.
-8. Undo/redo after each drag: exactly one step each; a drag that returns to the start adds none. Quick second drag of the same clip = a second step.
-9. Layer with keyframes: trim its start earlier/later; animation timing on the timeline stays the same. A locked layer does not move or trim.
-10. Open an older project: nothing changes in it; save, reopen: identical.

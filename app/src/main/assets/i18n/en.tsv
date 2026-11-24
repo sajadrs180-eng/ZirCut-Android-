@@ -687,12 +687,3 @@ HEVC (حجم کمتر)	HEVC (smaller size)
 لباس	Clothes
 وسایل و اکسسوری	Accessories
 هیچ بخشی انتخاب نشود = کل سوژه. مثلاً فقط «مو» را بزن تا فقط مو نگه داشته شود.	Nothing selected = the whole subject. For example tap only “Hair” to keep just the hair.
-چسبندگی تایم‌لاین خاموش شد	Timeline snapping turned off
-چسبندگی تایم‌لاین روشن شد	Timeline snapping turned on
-مدت {0} ثانیه	Duration {0} s
-چسبیده به پلی‌هد	Snapped to playhead
-چسبیده به ابتدای پروژه	Snapped to project start
-چسبیده به انتهای پروژه	Snapped to project end
-چسبیده به کلیپ ویدیو	Snapped to video clip
-چسبیده به لایه	Snapped to layer
-چسبیده به صدا	Snapped to audio
