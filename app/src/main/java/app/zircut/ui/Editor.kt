@@ -278,6 +278,8 @@ fun EditorScreen(
     }
     // posMs is a position on the EDITED timeline (clips laid end to end), not in a source video.
     val map = remember(ranges) { EdlMap(ranges) }
+    // Shared clip selection: tapping a timeline clip and the multi-select panel use the same state.
+    var pickedClips by remember(ui.projectId, map.segs.size) { mutableStateOf(setOf<Int>()) }
     val mapNow by rememberUpdatedState(map)
     val outPhrases = remember(ui.phrases, map) { outPhrasesOf(ui.phrases, map) }
     // where the video's own speech is (edited timeline): music ducks under it when the auto-duck switch is on and the video sound is audible
@@ -861,6 +863,13 @@ fun EditorScreen(
             scale = tlScale,
             onScale = { tlScale = it },
             videoKeys = ui.fx.vkeys.map { it.tMs },
+            selectedClips = pickedClips,
+            onClip = { i ->
+                pickedClips = setOf(i)
+                tab = EdTab.CLIP
+                toolGroup = EdGroup.CLIP
+                panelOpen = true
+            },
             onScrub = { scrub(it) },
             onReorderClip = { from, to -> applyEdl(EdlOps.moveIndex(map.segs, from, to)) },
             onTrimClip = { index, edge, out -> applyEdl(EdlOps.trimBoundary(map.segs, index, edge, out)) },
@@ -944,7 +953,9 @@ fun EditorScreen(
                             ripple = ui.ripple,
                             onRipple = { vm.setRipple(it) },
                             onGoto = { t -> scrub(t) },
-                            onSeekClip = { i -> seekOut(map.outStart(i)) }
+                            onSeekClip = { i -> seekOut(map.outStart(i)) },
+                            picked = pickedClips,
+                            onPicked = { pickedClips = it }
                         )
                         EdTab.KEY -> ChromaKeyPanel(
                             clipIndex = curSeg.coerceIn(0, maxOf(0, ranges.size - 1)),
@@ -1244,6 +1255,9 @@ private fun Timeline(
     onAudio: (Int) -> Unit,
     /** times (edited timeline) of the video picture's keyframes: drawn as diamonds on the ruler, a tap on one jumps to it */
     videoKeys: List<Long> = emptyList(),
+    /** selected video clips, shared with the Clip panel's multi-select controls */
+    selectedClips: Set<Int> = emptySet(),
+    onClip: (Int) -> Unit = {},
     /** magnetic snapping of dragged edges (the magnet button next to the zoom buttons) */
     snapOn: Boolean = true
 ) {
@@ -1280,6 +1294,7 @@ private fun Timeline(
     val moveAudioCb by rememberUpdatedState(onMoveAudio)
     val trimAudioCb by rememberUpdatedState(onTrimAudio)
     val trimPhraseCb by rememberUpdatedState(onTrimPhrase)
+    val clipCb by rememberUpdatedState(onClip)
     val tlHeight = run {
         val base = 110 + (if (rowsN > 0) 4 + 26 * rowsN else 0)
         if (audioRowsN > 0) maxOf(base, 102 + 26 * rowsN + 26 * audioRowsN + 8) else base
@@ -1528,6 +1543,11 @@ private fun Timeline(
                         var hit = -1
                         var layerHit = -1
                         var audioHit = -1
+                        var clipHit = -1
+                        if (o.y in (26f * density)..(58f * density) && map.segs.isNotEmpty()) {
+                            val clipTime = ms.coerceAtMost((total - 1L).coerceAtLeast(0L))
+                            clipHit = map.locate(clipTime).first
+                        }
                         if (o.y >= 100f * density) {
                             val audioTop = (102f + 26f * LayerOps.rowCount(rowsNow)) * density
                             if (o.y >= audioTop) {
@@ -1555,6 +1575,7 @@ private fun Timeline(
                         // tap on a video keyframe diamond (ruler) jumps to that key
                         val keyTap = if (o.y < 28f * density) vkeysNow.minByOrNull { kotlin.math.abs(it - ms) }?.takeIf { kotlin.math.abs(it - ms) * pxMs <= 16f * density } else null
                         if (keyTap != null) { scrubCb(keyTap); return@detectTapGestures }
+                        if (clipHit >= 0) clipCb(clipHit)
                         if (layerHit >= 0) layerCb(layerHit) else if (audioHit >= 0) audioCb(audioHit) else if (hit >= 0) phraseCb(hit) else scrubCb(ms)
                     }
                 }
@@ -1628,11 +1649,12 @@ private fun Timeline(
                 if (x2 < 0f || x1 > w) continue
                 val bw = maxOf(3f * d, x2 - x1)
                 val cur = i == curSeg
+                val selected = i in selectedClips
                 val photo = kinds.getOrNull(i) == 2
                 val fill = if (photo) (if (cur) Color(0xFF343C4A) else Color(0xFF272D38)) else (if (cur) Color(0xFF1B4A63) else Color(0xFF15384A))
-                val edge = if (cur) Z.Accent else if (photo) Z.BorderStrong else Z.AccentLine
+                val edge = if (selected) Z.Warn else if (cur) Z.Accent else if (photo) Z.BorderStrong else Z.AccentLine
                 drawRoundRect(fill, Offset(x1, lane1Top), Size(bw, laneH), r)
-                drawRoundRect(edge, Offset(x1, lane1Top), Size(bw, laneH), r, style = Stroke((if (cur) 1.6f else 1f) * d))
+                drawRoundRect(edge, Offset(x1, lane1Top), Size(bw, laneH), r, style = Stroke((if (selected) 2.4f else if (cur) 1.6f else 1f) * d))
                 // Visible trim grips on every clip make the editable edges discoverable;
                 // the selected clip gets stronger contrast, while all clips remain draggable.
                 if (bw > 14f * d) {
@@ -2684,11 +2706,12 @@ private fun ClipPanel(
     ripple: Boolean,
     onRipple: (Boolean) -> Unit,
     onGoto: (Long) -> Unit,
-    onSeekClip: (Int) -> Unit
+    onSeekClip: (Int) -> Unit,
+    picked: Set<Int>,
+    onPicked: (Set<Int>) -> Unit
 ) {
     val segs = map.segs
     val ci = map.locate(posMs).first
-    var picked by remember(segs.size) { mutableStateOf(setOf<Int>()) }
     var multiSpeed by remember { mutableStateOf(1f) }
     var freezeSec by remember { mutableStateOf(2) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Z.S3)) {
@@ -2808,27 +2831,27 @@ private fun ClipPanel(
                 verticalArrangement = Arrangement.spacedBy(Z.S2)
             ) {
                 segs.indices.forEach { i ->
-                    ZChip(fa(i + 1), i in picked, { picked = if (i in picked) picked - i else picked + i })
+                    ZChip(fa(i + 1), i in picked, { onPicked(if (i in picked) picked - i else picked + i) })
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
-                ClipTool(ZI.Check, "همه", picked.size < segs.size, Z.Text, Modifier.weight(1f)) { picked = segs.indices.toSet() }
-                ClipTool(ZI.Close, "هیچ‌کدام", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) { picked = emptySet() }
+                ClipTool(ZI.Check, "همه", picked.size < segs.size, Z.Text, Modifier.weight(1f)) { onPicked(segs.indices.toSet()) }
+                ClipTool(ZI.Close, "هیچ‌کدام", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) { onPicked(emptySet()) }
                 ClipTool(ZI.Position, "برو به اولی", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) { onSeekClip(picked.min()) }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
                 ClipTool(ZI.Copy, "کپی", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) {
-                    onApply(EdlOps.duplicateMany(segs, picked)); picked = emptySet()
+                    onApply(EdlOps.duplicateMany(segs, picked)); onPicked(emptySet())
                 }
                 ClipTool(ZI.Trash, "حذف", picked.isNotEmpty() && picked.size < segs.size, Z.Danger, Modifier.weight(1f)) {
-                    onApply(EdlOps.deleteMany(segs, picked)); picked = emptySet()
+                    onApply(EdlOps.deleteMany(segs, picked)); onPicked(emptySet())
                 }
             }
             Txt("جابه‌جایی انتخاب‌شده‌ها", style = ZType.label, color = Z.TextSec)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
                 listOf(2 to "به اول", 0 to "یکی جلوتر", 1 to "یکی عقب‌تر", 3 to "به آخر").forEach { (mode, label) ->
                     ZChip(label, false, {
-                        EdlOps.moveMany(segs, picked, mode)?.let { r -> onApply(r.result); picked = r.picked }
+                        EdlOps.moveMany(segs, picked, mode)?.let { r -> onApply(r.result); onPicked(r.picked) }
                     }, Modifier.weight(1f))
                 }
             }

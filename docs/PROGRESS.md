@@ -1,9 +1,16 @@
 # ZirCut — progress and hand-off notes
 
+## 0.1.248 — direct timeline clip selection
+- Tapping a video/photo block selects it, opens the Clip panel, and seeks to the tapped time.
+- The selected clip has an amber outline independent of the playhead's current-clip highlight.
+- Timeline selection and Clip panel multi-selection now share state; a timeline tap intentionally replaces the multi-selection with one clip.
+- Version is 248 / 0.1.248; GitHub Actions triggers on `feature/0.1.248-reviewed`.
+- Android build and device gesture checks must be confirmed by GitHub Actions and on-device testing.
+
 ## 0.1.247 — timeline regression hardening
 - Added tests for snap-target priority and exclusion of only the currently dragged audio clip. No timeline runtime logic or project format changed.
-- GitHub Actions now triggers on `feature/0.1.247-reviewed`; version is 247 / 0.1.247.
-- Android build and device checks remain pending until the reviewed branch is pushed and tested.
+- GitHub Actions triggers on `feature/0.1.247-reviewed`; version was 247 / 0.1.247.
+- GitHub Actions Build APK completed successfully; device gesture checks remain unverified.
 
 Android video editor (Kotlin, Jetpack Compose, Media3 Transformer). Built only through GitHub Actions
 (workflow unpacks every `fix*.zip` in the repo root in version order, then builds). Persian (RTL) first.
@@ -666,7 +673,7 @@ fix231 built on top of fix230; builds of fix229-231 not confirmed when fix232 wa
   Without ripple they still stay on timeline time (as before).
   (3) Timeline: video picture keys are drawn as yellow diamonds on the ruler (`Timeline(videoKeys = ...)`); a TAP on a diamond (ruler band, within 16 dp) jumps the playhead to that key. Other taps are unchanged.
   VERIFIED: Fx/ease/nudge/Ripple.videoKeys logic compiled with Kotlin 2.0.21 and 9 checks pass; syntax scan of all sources. NOT verified: Gradle build, UI, gestures on a phone (new code: Timeline marker drawing `drawPath`, tap branch `return@detectTapGestures`, panel chips).
-  NOT DONE from the timeline list (do not report as done): select clips by tapping them on the timeline (the pick state lives inside the Clip panel; needs hoisting), dragging keyframes / subtitle words on the timeline (the existing long-press-drag handler is large and was not touched without a compiler), waveform under the subtitle lane.
+  NOT DONE from the timeline list: dragging keyframes / subtitle words on the timeline (the existing long-press-drag handler is large and was not touched without a compiler), waveform under the subtitle lane. Direct clip selection by tapping the video lane was added in 0.1.248.
   Test: 2 keys on the video picture; choose «ثابت» on the first: picture jumps at the 2nd; «خطی»; nudge a key; diamonds appear on the ruler, tap one -> playhead jumps; ripple switch on, delete a clip before the keys -> keys move earlier; undo restores them.
 
 
