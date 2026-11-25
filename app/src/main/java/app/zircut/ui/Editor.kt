@@ -1512,7 +1512,7 @@ private fun Timeline(
                             feedback(r.hit)
                             pv = DragPv(
                                 if (moveLayerId >= 0) PV_LAYER else PV_AUDIO, if (moveLayerId >= 0) moveLayerId else moveAudioId, -1,
-                                movingStart + r.delta, movingEnd + r.delta, movingStart + r.delta, r.hit?.ms ?: -1L, r.hit?.kind?.ordinal ?: -1
+                                movingStart + r.delta, movingEnd + r.delta, r.anchorMs(movingStart, movingEnd), r.hit?.ms ?: -1L, r.hit?.kind?.ordinal ?: -1
                             )
                             change.consume()
                         } else if (fromIndex >= 0) {

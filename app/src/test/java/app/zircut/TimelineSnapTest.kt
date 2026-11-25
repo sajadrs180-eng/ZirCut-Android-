@@ -11,7 +11,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** 0.1.246: magnetic snapping and precise audio / layer trimming (pure logic, no Android). */
+/** 0.1.246–0.1.247: magnetic snapping and precise audio / layer trimming (pure logic, no Android). */
 class TimelineSnapTest {
     private fun clip(id: Int, start: Long, inMs: Long, len: Long, file: Long = 10_000L) =
         AudioClip(id, AudioClip.KIND_MUSIC, "a$id.wav", "a$id", start, inMs, len, file)
@@ -44,6 +44,36 @@ class TimelineSnapTest {
         assertTrue(5_000L !in ms && 6_000L !in ms) // layer 2 is the dragged one
         assertEquals(TimelineSnap.Kind.PLAYHEAD, t.first { it.ms == 4_000L }.kind)
         assertEquals(TimelineSnap.Kind.PROJECT, t.first { it.ms == 0L }.kind) // project beats video at the same time
+    }
+
+    @Test fun targetsUseStablePriorityWhenDifferentItemsShareOneTime() {
+        val t = TimelineSnap.targets(
+            total = 10_000L,
+            playheadMs = 2_000L,
+            videoEdges = listOf(2_000L, 3_000L),
+            layers = listOf(layer(1, 2_000L, 4_000L)),
+            audio = listOf(clip(7, 2_000L, 0L, 1_000L))
+        )
+        assertEquals(TimelineSnap.Kind.PLAYHEAD, t.first { it.ms == 2_000L }.kind)
+        assertEquals(TimelineSnap.Kind.VIDEO, t.first { it.ms == 3_000L }.kind)
+        assertEquals(1, t.count { it.ms == 2_000L })
+    }
+
+    @Test fun targetsCanExcludeTheDraggedAudioWithoutExcludingOtherAudio() {
+        val t = TimelineSnap.targets(
+            total = 10_000L,
+            playheadMs = 0L,
+            videoEdges = emptyList(),
+            layers = emptyList(),
+            audio = listOf(
+                clip(7, 1_000L, 0L, 1_000L),
+                clip(8, 4_000L, 0L, 1_000L)
+            ),
+            skipAudio = 7
+        )
+        val times = t.map { it.ms }
+        assertTrue(1_000L !in times && 2_000L !in times)
+        assertTrue(4_000L in times && 5_000L in times)
     }
 
     // ---------- nearest ----------

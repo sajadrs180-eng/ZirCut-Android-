@@ -1,5 +1,10 @@
 # ZirCut — progress and hand-off notes
 
+## 0.1.247 — timeline regression hardening
+- Added tests for snap-target priority and exclusion of only the currently dragged audio clip. No timeline runtime logic or project format changed.
+- GitHub Actions now triggers on `feature/0.1.247-reviewed`; version is 247 / 0.1.247.
+- Android build and device checks remain pending until the reviewed branch is pushed and tested.
+
 Android video editor (Kotlin, Jetpack Compose, Media3 Transformer). Built only through GitHub Actions
 (workflow unpacks every `fix*.zip` in the repo root in version order, then builds). Persian (RTL) first.
 
