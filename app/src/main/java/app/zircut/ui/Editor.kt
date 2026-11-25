@@ -2810,6 +2810,12 @@ private fun ClipPanel(
                 ZChip(speedLabel(sp), kotlin.math.abs(curSpeed - sp) < 0.01f, { if (canSpeed) onApply(EdlOps.setSpeed(segs, posMs, sp)) })
             }
         }
+        ZSlider(
+            "تنظیم دقیق سرعت (۰٫۱× تا ۸×)", curSpeed.coerceIn(0.1f, 8f), 0.1f, 8f,
+            { v -> if (canSpeed) onApply(EdlOps.setSpeed(segs, posMs, v)) },
+            steps = 78, readout = ::speedLabel
+        )
+        Txt("هر حرکت اسلایدر سرعت همین کلیپ را با گام ۰٫۱× تغییر می‌دهد؛ ۱× سرعت عادی است.", style = ZType.caption, color = Z.TextSec)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
             val up = EdlOps.ramp(segs, posMs, listOf(1f, 1.5f, 2.5f, 4f))
             val down = EdlOps.ramp(segs, posMs, listOf(4f, 2.5f, 1.5f, 1f))
