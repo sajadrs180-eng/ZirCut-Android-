@@ -64,4 +64,12 @@ object Ripple {
         val s = shift(a.startMs, c)
         if (s == a.startMs) a else a.copy(startMs = s)
     }
+
+    /** Independent video layers follow timeline ripple changes just like image/text layers. */
+    fun videoOverlays(list: List<VideoOverlay>, c: Change): List<VideoOverlay> = list.map { v ->
+        val s = shift(v.startMs, c)
+        var e = shift(v.endMs, c)
+        if (e - s < 200L) e = s + 200L
+        if (s == v.startMs && e == v.endMs) v else v.copy(startMs = s, endMs = e)
+    }
 }

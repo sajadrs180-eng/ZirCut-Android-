@@ -721,3 +721,11 @@ fix232 built on top of fix231; builds of fix229-232 not confirmed when fix233 wa
 - Frame stepping uses the detected source FPS and the edited-timeline scrub path; it pauses playback before seeking.
 - No export or clip-speed behavior intentionally changed.
 - Build and phone verification are pending.
+
+## 0.1.250 — first independent video PIP layer
+- Added a project-persistent `VideoOverlay` model, with backward-compatible JSON loading for projects that predate PIP.
+- Added a separate preview player and Media3 multi-sequence composition export for video overlays.
+- Added MP4 PIP import, start/duration/position/size controls, hide/remove and undo/redo state.
+- This first implementation supports one simultaneous PIP layer; its audio is muted. Masks, keyframes, advanced transforms, multiple simultaneous PIP tracks and per-overlay audio remain future work.
+- Build and real-device checks are required; do not mark this version release-verified until both preview and exported PIP are tested.
+- Follow-up source hardening: reject persisted/imported PIP ranges longer than the source file; regression test added. Android build and device playback/export remain unverified.

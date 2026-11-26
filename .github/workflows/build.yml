@@ -1,7 +1,7 @@
 name: Build APK
 on:
   push:
-    branches: [ main, master, feature/0.1.248-reviewed, feature/0.1.249-reviewed ]
+    branches: [ main, master, "feature/**" ]
   workflow_dispatch:
 
 jobs:

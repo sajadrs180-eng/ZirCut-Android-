@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -165,6 +166,7 @@ import app.zircut.timeline.EdlResult
 import app.zircut.timeline.MyTemplate
 import app.zircut.timeline.VideoTemplates
 import app.zircut.timeline.Layer
+import app.zircut.timeline.VideoOverlay
 import app.zircut.timeline.LayerAnim
 import app.zircut.timeline.LayerKeys
 import app.zircut.timeline.LayerOps
@@ -191,6 +193,7 @@ private enum class EdTab(val label: String, val title: String, val icon: ZI, val
     CLIP("کلیپ", "ویرایش کلیپ", ZI.Scissors, EdGroup.CLIP),
     EDIT("ادیت", "ویرایش خودکار", ZI.Tune, EdGroup.CLIP),
     LAYER("لایه", "لایه‌های متن و عکس", ZI.Layers, EdGroup.LAYER),
+    VIDEO("PIP", "لایه‌های ویدئویی (PIP)", ZI.Film, EdGroup.LAYER),
     AUDIO("صدا", "صدا و موسیقی", ZI.Music, EdGroup.AUDIO),
     CAPTIONS("زیرنویس", "زیرنویس‌ها", ZI.Captions, EdGroup.TEXT),
     STYLE("استایل", "استایل زیرنویس", ZI.Palette, EdGroup.TEXT),
@@ -232,6 +235,7 @@ fun EditorScreen(
     onAddMedia: (Long) -> Unit,
     onAddLayerImage: (Long, Long) -> Unit,
     onAddAudio: (Long, Long) -> Unit,
+    onAddVideoOverlay: (Long, Long) -> Unit,
     onPickLut: () -> Unit,
     onPickKeyBg: (Long) -> Unit,
     onImportSrt: () -> Unit,
@@ -250,6 +254,7 @@ fun EditorScreen(
     var showExport by remember { mutableStateOf(false) }
     var showRename by remember { mutableStateOf(false) }
     var tlScale by remember { mutableStateOf(48f) }
+    var selectedPip by remember(ui.projectId) { mutableStateOf(-1) }
 
     val appCtx = LocalContext.current
     // frame rate of the main video: frame-accurate time readout and frame stepping
@@ -257,6 +262,7 @@ fun EditorScreen(
         value = withContext(Dispatchers.IO) { runCatching { DeviceCaps.sourceFps(appCtx, uri) }.getOrDefault(30f) }
     }
     val player = remember { PreviewPlayer(appCtx) }
+    val pipPlayer = remember { PreviewPlayer(appCtx) }
     // music / voice-over clips play next to the video; recording state of the voice-over
     val audioPrev = remember { AudioPreview(appCtx) }
     var recorder by remember { mutableStateOf<VoiceRecorder?>(null) }
@@ -269,6 +275,8 @@ fun EditorScreen(
         else ui.extras.firstOrNull { it.id == idx }?.let { x -> Uri.fromFile(File(projDir, x.file)) }
     }
     val extrasNow by rememberUpdatedState(ui.extras)
+    val overlaysNow by rememberUpdatedState(ui.videoOverlays)
+    pipPlayer.uriOf = { idx -> overlaysNow.firstOrNull { it.id == idx }?.let { Uri.fromFile(File(projDir, it.file)) } }
     val audioNow by rememberUpdatedState(ui.audio)
     val duckNow by rememberUpdatedState(ui.duckMusic)
 
@@ -331,6 +339,7 @@ fun EditorScreen(
     fun pauseIfPlaying() {
         if (playing) {
             player.pause()
+            pipPlayer.pause()
             playing = false
         }
     }
@@ -419,6 +428,12 @@ fun EditorScreen(
         else micLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
 
+    LaunchedEffect(ui.videoOverlays) {
+        if (ui.videoOverlays.isNotEmpty() && ui.videoOverlays.none { it.id == selectedPip }) {
+            selectedPip = ui.videoOverlays.last().id
+        }
+    }
+
     LaunchedEffect(playing, recorder) {
         if (recorder != null && !playing) stopRecording()
     }
@@ -477,6 +492,11 @@ fun EditorScreen(
                     }
                 }
             }
+            val pip = overlaysNow.firstOrNull { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
+            if (pip != null) {
+                pipPlayer.setVolume(0f) // PIP audio is intentionally muted in 0.1.250.
+                pipPlayer.sync(pip.id, posMs - pip.startMs, playing)
+            } else pipPlayer.pause()
             audioPrev.update(audioNow, posMs, playing, projDir, duckNow, speechNow)
             delay(33)
         }
@@ -488,6 +508,7 @@ fun EditorScreen(
     DisposableEffect(Unit) {
         onDispose {
             player.release()
+            pipPlayer.release()
             audioPrev.release()
             recorder?.cancel()
         }
@@ -719,6 +740,31 @@ fun EditorScreen(
                 }
                 if (curIsImage && curExtra != null) {
                     PreviewImage(File(projDir, curExtra.file).absolutePath, Modifier.fillMaxSize())
+                }
+                val activePip = ui.videoOverlays.firstOrNull { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
+                if (activePip != null) {
+                    val pipW = fw * activePip.width
+                    val pipAspect = activePip.sourceWidth.toFloat() / activePip.sourceHeight.toFloat()
+                    val pipH = pipW / pipAspect.coerceIn(0.2f, 5f)
+                    Box(
+                        Modifier.align(Alignment.TopStart)
+                            .offset(x = fw * (activePip.x - activePip.width / 2f), y = fh * (activePip.y - (pipH / fh) / 2f))
+                            .size(pipW, pipH)
+                            .clip(RoundedCornerShape(6.dp))
+                            .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
+                    ) {
+                        AndroidView(
+                            factory = { c -> TextureView(c).apply {
+                                surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+                                    override fun onSurfaceTextureAvailable(t: SurfaceTexture, w: Int, h: Int) { pipPlayer.setSurface(Surface(t)) }
+                                    override fun onSurfaceTextureSizeChanged(t: SurfaceTexture, w: Int, h: Int) {}
+                                    override fun onSurfaceTextureDestroyed(t: SurfaceTexture): Boolean { pipPlayer.setSurface(null); return true }
+                                    override fun onSurfaceTextureUpdated(t: SurfaceTexture) {}
+                                }
+                            } },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
                 Canvas(Modifier.fillMaxSize()) {
                     val lk = size.width / renderW
@@ -992,6 +1038,16 @@ fun EditorScreen(
                             onSplit = { id -> vm.splitLayer(id, posMs) },
                             onMove = { id, d -> vm.moveLayer(id, d) },
                             onGoto = { t -> scrub(t) }
+                        )
+                        EdTab.VIDEO -> VideoOverlayPanel(
+                            overlays = ui.videoOverlays,
+                            selectedId = selectedPip,
+                            posMs = posMs,
+                            totalMs = kept,
+                            onSelect = { selectedPip = it },
+                            onAdd = { pauseIfPlaying(); onAddVideoOverlay(posMs, kept) },
+                            onEdit = { id, key, change -> vm.editVideoOverlay(id, key, change) },
+                            onDelete = { id -> vm.removeVideoOverlay(id); if (selectedPip == id) selectedPip = -1 }
                         )
                         EdTab.AUDIO -> AudioPanel(
                             clips = ui.audio,
@@ -2245,6 +2301,46 @@ private fun ColorRow(colors: List<Int>, selected: Int, allowNone: Boolean, onPic
                     .press(true) { onPick(c) }
             )
         }
+    }
+}
+
+@Composable
+private fun VideoOverlayPanel(
+    overlays: List<VideoOverlay>, selectedId: Int, posMs: Long, totalMs: Long,
+    onSelect: (Int) -> Unit, onAdd: () -> Unit,
+    onEdit: (Int, String, (VideoOverlay) -> VideoOverlay) -> Unit, onDelete: (Int) -> Unit
+) {
+    val selected = overlays.firstOrNull { it.id == selectedId }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Z.S3)) {
+        ZButton("افزودن ویدئوی MP4 روی ویدئو (PIP)", onAdd, Modifier.fillMaxWidth(), icon = ZI.Plus, compact = true)
+        if (overlays.isNotEmpty()) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
+                items(overlays.size) { i ->
+                    val v = overlays[i]
+                    ZChip("ویدئو ${fa(v.id)}", v.id == selectedId, { onSelect(v.id) })
+                }
+            }
+        }
+        if (selected == null) {
+            Txt("یک فایل MP4 اضافه کن تا مستقل از کلیپ اصلی، روی تصویر نمایش داده شود. زمان، جایگاه و اندازه از این پنل قابل تنظیم است.", style = ZType.caption, color = Z.TextSec)
+            return@Column
+        }
+        Txt("زمان ${faTime(selected.startMs)} تا ${faTime(selected.endMs)}", style = ZType.labelStrong)
+        val maxStart = (totalMs - selected.len).coerceAtLeast(0L)
+        if (maxStart > 0L) ZSlider("شروع روی تایم‌لاین", selected.startMs.toFloat(), 0f, maxStart.toFloat(), { v ->
+            val start = v.toLong().coerceIn(0L, maxStart)
+            onEdit(selected.id, "timing") { it.copy(startMs = start, endMs = start + it.len) }
+        }, readout = { faTime(it.toLong()) })
+        val maxDuration = minOf(selected.sourceDurationMs, (totalMs - selected.startMs).coerceAtLeast(0L))
+        if (maxDuration >= 200L) ZSlider("مدت نمایش", selected.len.toFloat(), 200f, maxDuration.toFloat(), { v ->
+            onEdit(selected.id, "duration") { it.copy(endMs = (it.startMs + v.toLong()).coerceAtMost(totalMs)) }
+        }, readout = { faTime(it.toLong()) })
+        ZSlider("موقعیت افقی", selected.x, 0.05f, 0.95f, { v -> onEdit(selected.id, "x") { it.copy(x = v) } }, readout = ::pct)
+        ZSlider("موقعیت عمودی", selected.y, 0.05f, 0.95f, { v -> onEdit(selected.id, "y") { it.copy(y = v) } }, readout = ::pct)
+        ZSlider("اندازه", selected.width, 0.12f, 0.8f, { v -> onEdit(selected.id, "width") { it.copy(width = v) } }, readout = ::pct)
+        ZToggleRow(ZI.Film, "مخفی‌کردن ویدئو", "لایه در پروژه باقی می‌ماند ولی نمایش داده نمی‌شود", selected.hidden) { v -> onEdit(selected.id, "hidden") { it.copy(hidden = v) } }
+        ZButton("حذف لایه ویدئویی", { onDelete(selected.id) }, Modifier.fillMaxWidth(), kind = ZBtn.Danger, icon = ZI.Trash, compact = true)
+        Txt("صدا در نسخهٔ فعلی PIP بی‌صداست؛ کنترل صدای مستقل در نسخهٔ بعدی اضافه می‌شود.", style = ZType.caption, color = Z.TextSec)
     }
 }
 

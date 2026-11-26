@@ -57,6 +57,32 @@ class PreviewPlayer(private val ctx: Context) {
         if (loaded == idx && ready) apply() else load(idx)
     }
 
+    /** Keep a secondary preview player close to the edited-timeline clock without seeking every frame. */
+    fun sync(idx: Int, localMs: Long, play: Boolean) {
+        wantSeek = localMs.coerceAtLeast(0L)
+        wantPlay = play
+        if (loaded != idx || !ready) {
+            if (loaded != idx) load(idx)
+            return
+        }
+        val m = mp ?: return
+        try {
+            m.setVolume(volume, volume)
+            if (play) {
+                if (!m.isPlaying) {
+                    m.seekTo(wantSeek, MediaPlayer.SEEK_CLOSEST)
+                    try { m.playbackParams = PlaybackParams().setSpeed(speed) } catch (_: Exception) { }
+                    m.start()
+                } else if (kotlin.math.abs(m.currentPosition.toLong() - wantSeek) > 350L) {
+                    m.seekTo(wantSeek, MediaPlayer.SEEK_CLOSEST)
+                }
+            } else {
+                if (m.isPlaying) m.pause()
+                if (kotlin.math.abs(m.currentPosition.toLong() - wantSeek) > 90L) m.seekTo(wantSeek, MediaPlayer.SEEK_CLOSEST)
+            }
+        } catch (_: Exception) { }
+    }
+
     private fun apply() {
         val m = mp ?: return
         try {
