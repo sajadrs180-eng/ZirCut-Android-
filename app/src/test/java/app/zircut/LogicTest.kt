@@ -63,6 +63,23 @@ class LogicTest {
         assertNull(EdlOps.setSpeedMany(segs(), setOf(0), 2f, skip = setOf(0)))
     }
 
+    @Test fun preciseSpeedChangesOnlyTheClipAndKeepsPlayheadPosition() {
+        val input = segs()
+        val r = EdlOps.setSpeed(input, 500L, 2.3f)
+        assertNotNull(r)
+        assertEquals(2.3f, r!!.segs[0].speed, 0.001f)
+        assertEquals(1f, r.segs[1].speed, 0.001f)
+        assertEquals(217L, r.playhead)
+        assertEquals(435L, r.segs[0].outLen)
+    }
+
+    @Test fun preciseSpeedIsClampedToSupportedRange() {
+        val slow = EdlOps.setSpeed(segs(), 500L, 0.01f)
+        val fast = EdlOps.setSpeed(segs(), 500L, 20f)
+        assertEquals(0.1f, slow!!.segs[0].speed, 0.001f)
+        assertEquals(8f, fast!!.segs[0].speed, 0.001f)
+    }
+
     @Test fun moveManyKeepsOrderAndTracksPicked() {
         val l = listOf(Range(0, 1000), Range(1000, 2000), Range(2000, 3000), Range(3000, 4000))
         val toEnd = EdlOps.moveMany(l, setOf(0, 2), 3)!!

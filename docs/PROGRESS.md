@@ -1,9 +1,44 @@
 # ZirCut — progress and hand-off notes
 
+## 0.1.252 — keyframed video-overlay transforms (implementation prepared; build/device checks pending)
+- Adds keyframes for PIP position, scale, rotation, and opacity, with smooth/linear/hold interpolation.
+- Editor controls add/update/remove keyframes at the playhead and edit the evaluated transform.
+- Preview and Media3 export use the same `VideoOverlayKeys` interpolation.
+- Project JSON persists rotation, opacity, and keys; old project files default to the previous static appearance.
+- Unit tests cover interpolation, insertion/removal, and invalid keyframe ranges.
+- Masks and blend modes are intentionally not claimed as implemented; they remain separate work for later checkpoints.
+- Must verify GitHub Actions build, old-project loading, animated preview, and rendered export on a real phone.
+
+## 0.1.251 — multiple independent video overlay tracks (implementation prepared; build/device checks pending)
+- Raises independent video overlays from one to a maximum of three per project.
+- Preview uses a dedicated `PreviewPlayer` for each overlay and synchronizes all active layers against the edited-timeline clock.
+- Exporter creates one Media3 sequence per visible overlay; compositor input IDs map to each overlay, preserving the optional transparent top sequence for text/photo/FX overlays.
+- Adds capacity validation tests and releases players when overlay layers are deleted.
+- Audio on overlay videos remains muted. Masks, per-overlay keyframes, and drag positioning are not included.
+- Must verify GitHub Actions build, simultaneous preview, and exported composition order/performance on a real phone.
+
+## 0.1.248 — direct timeline clip selection
+- Tapping a video/photo block selects it, opens the Clip panel, and seeks to the tapped time.
+- The selected clip has an amber outline independent of the playhead's current-clip highlight.
+- Timeline selection and Clip panel multi-selection now share state; a timeline tap intentionally replaces the multi-selection with one clip.
+- Version is 248 / 0.1.248; GitHub Actions triggers on `feature/0.1.248-reviewed`.
+- Android build and device gesture checks must be confirmed by GitHub Actions and on-device testing.
+
+## 0.1.247 — timeline regression hardening
+- Added tests for snap-target priority and exclusion of only the currently dragged audio clip. No timeline runtime logic or project format changed.
+- GitHub Actions triggers on `feature/0.1.247-reviewed`; version was 247 / 0.1.247.
+- GitHub Actions Build APK completed successfully; device gesture checks remain unverified.
+
 Android video editor (Kotlin, Jetpack Compose, Media3 Transformer). Built only through GitHub Actions
 (workflow unpacks every `fix*.zip` in the repo root in version order, then builds). Persian (RTL) first.
 
 Target: a CapCut-class editor, delivered in 8 parts. Every part is a full project snapshot zip (fix110, fix120, ...).
+
+## 0.1.246 — precision timeline (NOT yet built on a device)
+- New: `timeline/TimelineSnap.kt` (`TimelineSnap` = magnet logic, `TrimOps` = exact audio/layer trimming limits), `TimelineSnapTest` (21 tests, run with kotlinc 2.0.21 + JUnit 4.13.2).
+- `Editor.kt`: the timeline drag gesture now snaps, previews the range and shows the readout; magnet button; `MainViewModel`: `snap` app setting, `newStep` for one-undo-per-drag.
+- Details: docs/CHANGELOG-0.1.246.md. Test list: docs/TESTING.md section 12.
+- Known: Editor.kt/MainViewModel.kt changes are only syntax-checked (no Android SDK here); the first Gradle build may need small fixes.
 
 ## Parts
 
@@ -655,7 +690,7 @@ fix231 built on top of fix230; builds of fix229-231 not confirmed when fix232 wa
   Without ripple they still stay on timeline time (as before).
   (3) Timeline: video picture keys are drawn as yellow diamonds on the ruler (`Timeline(videoKeys = ...)`); a TAP on a diamond (ruler band, within 16 dp) jumps the playhead to that key. Other taps are unchanged.
   VERIFIED: Fx/ease/nudge/Ripple.videoKeys logic compiled with Kotlin 2.0.21 and 9 checks pass; syntax scan of all sources. NOT verified: Gradle build, UI, gestures on a phone (new code: Timeline marker drawing `drawPath`, tap branch `return@detectTapGestures`, panel chips).
-  NOT DONE from the timeline list (do not report as done): select clips by tapping them on the timeline (the pick state lives inside the Clip panel; needs hoisting), dragging keyframes / subtitle words on the timeline (the existing long-press-drag handler is large and was not touched without a compiler), waveform under the subtitle lane.
+  NOT DONE from the timeline list: dragging keyframes / subtitle words on the timeline (the existing long-press-drag handler is large and was not touched without a compiler), waveform under the subtitle lane. Direct clip selection by tapping the video lane was added in 0.1.248.
   Test: 2 keys on the video picture; choose «ثابت» on the first: picture jumps at the 2nd; «خطی»; nudge a key; diamonds appear on the ruler, tap one -> playhead jumps; ripple switch on, delete a clip before the keys -> keys move earlier; undo restores them.
 
 
@@ -703,3 +738,11 @@ fix232 built on top of fix231; builds of fix229-232 not confirmed when fix233 wa
 - Frame stepping uses the detected source FPS and the edited-timeline scrub path; it pauses playback before seeking.
 - No export or clip-speed behavior intentionally changed.
 - Build and phone verification are pending.
+
+## 0.1.250 — first independent video PIP layer
+- Added a project-persistent `VideoOverlay` model, with backward-compatible JSON loading for projects that predate PIP.
+- Added a separate preview player and Media3 multi-sequence composition export for video overlays.
+- Added MP4 PIP import, start/duration/position/size controls, hide/remove and undo/redo state.
+- This first implementation supports one simultaneous PIP layer; its audio is muted. Masks, keyframes, advanced transforms, multiple simultaneous PIP tracks and per-overlay audio remain future work.
+- Build and real-device checks are required; do not mark this version release-verified until both preview and exported PIP are tested.
+- Follow-up source hardening: reject persisted/imported PIP ranges longer than the source file; regression test added. Android build and device playback/export remain unverified.

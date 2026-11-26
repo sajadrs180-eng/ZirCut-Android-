@@ -10,12 +10,14 @@ import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Size
 import androidx.media3.effect.BitmapOverlay
 import androidx.media3.effect.Crop
 import androidx.media3.effect.FrameDropEffect
 import androidx.media3.effect.MatrixTransformation
-import androidx.media3.effect.OverlayEffect
 import androidx.media3.effect.OverlaySettings
+import androidx.media3.effect.OverlayEffect
+import androidx.media3.effect.VideoCompositorSettings
 import androidx.media3.effect.Presentation
 import androidx.media3.effect.RgbMatrix
 import androidx.media3.effect.ScaleAndRotateTransformation
@@ -34,8 +36,11 @@ import androidx.media3.transformer.VideoEncoderSettings
 import app.zircut.timeline.Layer
 import app.zircut.timeline.LayerAnim
 import app.zircut.timeline.LayerKeys
+import app.zircut.timeline.VideoOverlay
+import app.zircut.timeline.VideoOverlayKeys
 import com.google.common.collect.ImmutableList
 import java.io.File
+import java.io.FileOutputStream
 import kotlin.math.min
 
 @UnstableApi
@@ -73,7 +78,9 @@ class Exporter(private val ctx: Context) {
         /** whole-video effects: vignette, grain, cinema bars, light leak */
         val fx: Fx = Fx(),
         /** resolution / frame rate / codec / bitrate chosen in the export sheet */
-        val settings: ExportSettings = ExportSettings()
+        val settings: ExportSettings = ExportSettings(),
+        /** independent video layers, placed on the edited output timeline */
+        val videoOverlays: List<VideoOverlay> = emptyList()
     )
 
     /** Must be called on the main thread. */
@@ -111,6 +118,11 @@ class Exporter(private val ctx: Context) {
         val keyBgCache = HashMap<String, Bitmap?>()
         val timeline = CaptionTimeline(p.phrases, p.captionRanges ?: p.ranges)
         val renderer = CaptionRenderer(targetW, targetH, p.style, p.typeface, p.layout)
+        val totalDurationMs = p.ranges.sumOf { it.len }
+        val overlayItems = p.videoOverlays.filter {
+            it.valid() && !it.hidden && it.startMs < totalDurationMs && p.projectDir != null && File(p.projectDir, it.file).isFile
+        }.take(VideoOverlay.MAX_LAYERS)
+        val hasPip = overlayItems.isNotEmpty()
         var acc = 0L
         val multi = p.sources != null
         val items = p.ranges.mapIndexed { i, r ->
@@ -174,17 +186,17 @@ class Exporter(private val ctx: Context) {
             if (clipFx.hasShader || enterTr.kind != TrKind.NONE || exitTr.kind != TrKind.NONE) {
                 v.add(GpuFxEffect(clipFx, ClipTiming(acc * 1000L, r.len, i == 0, i == p.ranges.size - 1, enterTr, exitTr)))
             }
-            val overlays = ArrayList<TextureOverlay>()
-            // effects lie directly on the picture, under layers and subtitles
-            for (fl in fxLayers) overlays.add(FxOverlay(fl, targetW, targetH))
-            // layers first, so subtitles stay on top of them
-            for (b in baked) {
-                if (b.layer.startMs < acc + r.len && b.layer.endMs > acc) overlays.add(LayerOverlay(b, acc * 1000L))
+            if (!hasPip) {
+                val overlays = ArrayList<TextureOverlay>()
+                for (fl in fxLayers) overlays.add(FxOverlay(fl, targetW, targetH))
+                for (b in baked) {
+                    if (b.layer.startMs < acc + r.len && b.layer.endMs > acc) overlays.add(LayerOverlay(b, acc * 1000L))
+                }
+                if (opt.captions && p.phrases.isNotEmpty()) {
+                    overlays.add(CaptionOverlay(timeline, p.phrases, renderer, p.style, p.layout, acc * 1000L))
+                }
+                if (overlays.isNotEmpty()) v.add(OverlayEffect(ImmutableList.copyOf(overlays)))
             }
-            if (opt.captions && p.phrases.isNotEmpty()) {
-                overlays.add(CaptionOverlay(timeline, p.phrases, renderer, p.style, p.layout, acc * 1000L))
-            }
-            if (overlays.isNotEmpty()) v.add(OverlayEffect(ImmutableList.copyOf(overlays)))
             acc += r.len
             val eb = EditedMediaItem.Builder(mi).setEffects(Effects(emptyList(), v))
             if (isImage) eb.setDurationUs(r.len * 1000L).setFrameRate(if (wantFps > 0) wantFps else 30)
@@ -194,16 +206,73 @@ class Exporter(private val ctx: Context) {
         }
 
         val videoSeq = EditedMediaItemSequence(items)
+        val transparentPng = if (hasPip) ensureTransparentPng() else null
+        fun transparentItem(durationMs: Long, frameWidth: Int, frameHeight: Int, frameRate: Int): EditedMediaItem {
+            val image = MediaItem.Builder().setUri(Uri.fromFile(transparentPng!!))
+                .setMimeType(MimeTypes.IMAGE_PNG).setImageDurationMs(durationMs).build()
+            val fit = Presentation.createForWidthAndHeight(frameWidth, frameHeight, Presentation.LAYOUT_SCALE_TO_FIT)
+            return EditedMediaItem.Builder(image).setDurationUs(durationMs * 1000L)
+                .setFrameRate(frameRate.coerceAtLeast(1)).setRemoveAudio(true)
+                .setEffects(Effects(emptyList(), listOf(fit))).build()
+        }
+        val overlaySequences = overlayItems.map { layer ->
+            val source = File(p.projectDir!!, layer.file)
+            val startMs = layer.startMs.coerceIn(0L, totalDurationMs)
+            val durationMs = minOf(layer.len, layer.sourceDurationMs, (totalDurationMs - startMs).coerceAtLeast(0L))
+            val endMs = startMs + durationMs
+            val sourceW = layer.sourceWidth.coerceAtLeast(2)
+            val sourceH = layer.sourceHeight.coerceAtLeast(2)
+            val pipPresentation = Presentation.createForWidthAndHeight(sourceW, sourceH, Presentation.LAYOUT_SCALE_TO_FIT)
+            val media = MediaItem.Builder().setUri(Uri.fromFile(source)).setClippingConfiguration(
+                MediaItem.ClippingConfiguration.Builder().setStartPositionMs(0L).setEndPositionMs(durationMs).build()
+            ).build()
+            val pipItem = EditedMediaItem.Builder(media).setRemoveAudio(true)
+                .setEffects(Effects(emptyList(), listOf(pipPresentation))).build()
+            val seqItems = ArrayList<EditedMediaItem>()
+            if (startMs > 0L) seqItems.add(transparentItem(startMs, sourceW, sourceH, wantFps.takeIf { it > 0 } ?: 30))
+            seqItems.add(pipItem)
+            if (endMs < totalDurationMs) seqItems.add(transparentItem(totalDurationMs - endMs, sourceW, sourceH, wantFps.takeIf { it > 0 } ?: 30))
+            EditedMediaItemSequence(seqItems)
+        }
+        val compositionVideoOverlays = ArrayList<TextureOverlay>()
+        if (hasPip) {
+            for (fl in fxLayers) compositionVideoOverlays.add(FxOverlay(fl, targetW, targetH))
+            for (b in baked) compositionVideoOverlays.add(LayerOverlay(b, 0L))
+            if (opt.captions && p.phrases.isNotEmpty()) {
+                compositionVideoOverlays.add(CaptionOverlay(timeline, p.phrases, renderer, p.style, p.layout, 0L))
+            }
+        }
+        val topOverlaySequence = if (hasPip && compositionVideoOverlays.isNotEmpty()) {
+            val overlayEffect = OverlayEffect(ImmutableList.copyOf(compositionVideoOverlays))
+            val overlayMedia = MediaItem.Builder().setUri(Uri.fromFile(transparentPng!!))
+                .setMimeType(MimeTypes.IMAGE_PNG).setImageDurationMs(totalDurationMs).build()
+            val overlayItem = EditedMediaItem.Builder(overlayMedia).setDurationUs(totalDurationMs * 1000L)
+                .setFrameRate(wantFps.takeIf { it > 0 } ?: 30).setRemoveAudio(true)
+                .setEffects(Effects(emptyList(), listOf(
+                    Presentation.createForWidthAndHeight(targetW, targetH, Presentation.LAYOUT_SCALE_TO_FIT),
+                    overlayEffect
+                ))).build()
+            EditedMediaItemSequence(listOf(overlayItem))
+        } else null
         val mixItem = p.mixAudio?.let { EditedMediaItem.Builder(MediaItem.fromUri(Uri.fromFile(it))).build() }
-        val cb = if (mixItem != null) Composition.Builder(videoSeq, EditedMediaItemSequence(listOf(mixItem))) else Composition.Builder(videoSeq)
+        // Media3 draws earlier registered video sequences on top: optional text/FX sequence, ordered PIP layers, then the main timeline.
+        val allSequences = ArrayList<EditedMediaItemSequence>()
+        if (topOverlaySequence != null) allSequences.add(topOverlaySequence)
+        allSequences.addAll(overlaySequences)
+        allSequences.add(videoSeq)
+        if (mixItem != null) allSequences.add(EditedMediaItemSequence(listOf(mixItem)))
+        val cb = if (allSequences.size == 1) Composition.Builder(videoSeq)
+            else Composition.Builder(allSequences.first(), *allSequences.drop(1).toTypedArray())
+        if (hasPip) cb.setVideoCompositorSettings(
+            PipCompositorSettings(targetW, targetH, overlayItems, totalDurationMs, if (topOverlaySequence != null) 1 else 0)
+        )
         if (mixItem == null && p.sources?.any { it.image } == true) {
             // photos have no audio: ask Transformer to fill the gaps with silence (method is experimental, so call it softly)
             try {
                 Composition.Builder::class.java
                     .getMethod("experimentalSetForceAudioTrack", Boolean::class.javaPrimitiveType)
                     .invoke(cb, true)
-            } catch (_: Throwable) {
-            }
+            } catch (_: Throwable) { }
         }
         val composition = cb.build()
 
@@ -256,9 +325,51 @@ class Exporter(private val ctx: Context) {
         })
     }
 
+    private fun ensureTransparentPng(): File {
+        val file = File(ctx.cacheDir, "zircut-transparent-pip.png")
+        if (!file.isFile || file.length() == 0L) {
+            val bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888)
+            try { FileOutputStream(file).use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) } }
+            finally { bitmap.recycle() }
+        }
+        return file
+    }
+
     fun cancel() {
         polling = false
         transformer?.cancel()
+    }
+}
+
+/**
+ * PIP sequences are registered in project order before the main sequence because Media3 composites earlier inputs on top.
+ * Position/size are normalized to the output frame and timing is evaluated on the edited timeline.
+ */
+@UnstableApi
+private class PipCompositorSettings(
+    private val outW: Int,
+    private val outH: Int,
+    private val overlays: List<VideoOverlay>,
+    private val totalDurationMs: Long,
+    private val pipInputOffset: Int
+) : VideoCompositorSettings {
+    override fun getOutputSize(inputSizes: List<Size>): Size = Size(outW, outH)
+
+    override fun getOverlaySettings(inputId: Int, presentationTimeUs: Long): OverlaySettings {
+        // PIP sequences are registered before the main sequence and after any transparent text/FX sequence.
+        val layer = overlays.getOrNull(inputId - pipInputOffset)
+            ?: return OverlaySettings.Builder().build() // transparent top sequence or main timeline
+        val ms = presentationTimeUs / 1000L
+        val visible = ms >= layer.startMs && ms < minOf(layer.endMs, totalDurationMs)
+        val pose = VideoOverlayKeys.pose(layer, ms)
+        val scale = (layer.width * pose.scale).coerceIn(0.04f, 2f)
+        val settings = OverlaySettings.Builder()
+            .setScale(scale, scale)
+            .setOverlayFrameAnchor(0f, 0f)
+            .setBackgroundFrameAnchor((pose.x.coerceIn(0f, 1f) - 0.5f) * 2f, (0.5f - pose.y.coerceIn(0f, 1f)) * 2f)
+            .setAlphaScale(if (visible) pose.opacity.coerceIn(0f, 1f) else 0f)
+        if (pose.rotation != 0f) settings.setRotationDegrees(-pose.rotation)
+        return settings.build()
     }
 }
 

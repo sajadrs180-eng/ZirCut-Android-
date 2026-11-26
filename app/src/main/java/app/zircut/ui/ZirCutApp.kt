@@ -99,6 +99,11 @@ fun ZirCutApp(vm: MainViewModel = viewModel()) {
     val mediaPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) vm.addMedia(uri, insertAt)
     }
+    var pipAt by remember { mutableStateOf(0L) }
+    var pipTotal by remember { mutableStateOf(0L) }
+    val pipPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) vm.importVideoOverlay(uri, pipAt, pipTotal)
+    }
     var layerAt by remember { mutableStateOf(0L) }
     var layerTotal by remember { mutableStateOf(0L) }
     val layerPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -182,6 +187,11 @@ fun ZirCutApp(vm: MainViewModel = viewModel()) {
                             audioAt = pos
                             audioTotal = total
                             audioPicker.launch(arrayOf("audio/*"))
+                        },
+                        onAddVideoOverlay = { pos, total ->
+                            pipAt = pos
+                            pipTotal = total
+                            pipPicker.launch(arrayOf("video/mp4"))
                         },
                         onImportSrt = { srtPicker.launch(arrayOf("*/*")) },
                         onPickLut = { lutPicker.launch(arrayOf("*/*")) },

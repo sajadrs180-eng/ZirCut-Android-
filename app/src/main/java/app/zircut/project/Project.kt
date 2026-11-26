@@ -18,6 +18,7 @@ import app.zircut.timeline.AudioClip
 import app.zircut.timeline.Keyframe
 import app.zircut.timeline.Layer
 import app.zircut.timeline.LayerKeys
+import app.zircut.timeline.VideoOverlay
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -69,7 +70,9 @@ data class ProjectData(
     /** export sheet choices (part 7) */
     val export: ExportSettings = ExportSettings(),
     /** music is turned down automatically while a voice-over clip plays */
-    val duckMusic: Boolean = false
+    val duckMusic: Boolean = false,
+    /** independent video layers above the main timeline */
+    val videoOverlays: List<VideoOverlay> = emptyList()
 )
 
 /**
@@ -146,6 +149,20 @@ class ProjectStore(private val ctx: Context) {
             )
         }
         o.put("extras", ex)
+        o.put("videoOverlays", JSONArray().also { a -> d.videoOverlays.filter { it.valid() }.forEach { v ->
+            a.put(JSONObject().put("id", v.id).put("file", v.file).put("sourceDur", v.sourceDurationMs).put("sourceW", v.sourceWidth).put("sourceH", v.sourceHeight)
+                .put("s", v.startMs).put("e", v.endMs).put("x", v.x.toDouble()).put("y", v.y.toDouble())
+                .put("width", v.width.toDouble()).put("muted", v.muted).put("hidden", v.hidden)
+                .put("rot", v.rotation.toDouble()).put("opacity", v.opacity.toDouble())
+                .put("keys", JSONArray().also { ka ->
+                    v.keys.forEach { k ->
+                        ka.put(JSONObject().put("t", k.tMs).put("x", k.x.toDouble())
+                            .put("y", k.y.toDouble()).put("sc", k.scale.toDouble())
+                            .put("op", k.opacity.toDouble()).put("rot", k.rotation.toDouble())
+                            .put("ez", k.ease))
+                    }
+                }))
+        } })
         o.put("layers", layersJson(d.layers))
         o.put("audio", audioJson(d.audio))
         o.put("mainVol", d.mainVolume.toDouble())
@@ -252,6 +269,20 @@ class ProjectStore(private val ctx: Context) {
             mainVolume = o.optDouble("mainVol", 1.0).toFloat().coerceIn(0f, 1f),
             mainMuted = o.optBoolean("mainMute", false),
             duckMusic = o.optBoolean("duck", false),
+            videoOverlays = (o.optJSONArray("videoOverlays") ?: JSONArray()).let { a ->
+                (0 until a.length()).mapNotNull { i ->
+                    val v = a.optJSONObject(i) ?: return@mapNotNull null
+                    VideoOverlay(v.optInt("id"), v.optString("file"), v.optLong("sourceDur"), v.optInt("sourceW"), v.optInt("sourceH"),
+                        v.optLong("s"), v.optLong("e"), v.optDouble("x", 0.78).toFloat(),
+                        v.optDouble("y", 0.22).toFloat(), v.optDouble("width", 0.32).toFloat(),
+                        v.optBoolean("muted", true), v.optBoolean("hidden", false),
+                        v.optDouble("rot", 0.0).toFloat().coerceIn(-LayerKeys.ROT_MAX, LayerKeys.ROT_MAX),
+                        v.optDouble("opacity", 1.0).toFloat().coerceIn(0.05f, 1f),
+                        keysFrom(v.optJSONArray("keys"), v.optDouble("rot", 0.0).toFloat())
+                            .filter { it.tMs in 0L..(v.optLong("e") - v.optLong("s")).coerceAtLeast(0L) })
+                        .takeIf { it.valid() }
+                }.take(12)
+            },
             fx = o.optJSONObject("fx")?.let {
                 Fx(
                     vignette = it.optDouble("vignette", 0.0).toFloat().coerceIn(0f, 1f), grain = it.optDouble("grain", 0.0).toFloat().coerceIn(0f, 1f),

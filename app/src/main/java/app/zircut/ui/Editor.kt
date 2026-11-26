@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -64,7 +65,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -95,6 +98,8 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -116,6 +121,8 @@ import app.zircut.core.VoiceRecorder
 import app.zircut.core.Waveform
 import app.zircut.timeline.AudioClip
 import app.zircut.timeline.AudioOps
+import app.zircut.timeline.TimelineSnap
+import app.zircut.timeline.TrimOps
 import app.zircut.MainViewModel
 import app.zircut.UiState
 import app.zircut.core.CapLayout
@@ -160,6 +167,8 @@ import app.zircut.timeline.EdlResult
 import app.zircut.timeline.MyTemplate
 import app.zircut.timeline.VideoTemplates
 import app.zircut.timeline.Layer
+import app.zircut.timeline.VideoOverlay
+import app.zircut.timeline.VideoOverlayKeys
 import app.zircut.timeline.LayerAnim
 import app.zircut.timeline.LayerKeys
 import app.zircut.timeline.LayerOps
@@ -186,6 +195,7 @@ private enum class EdTab(val label: String, val title: String, val icon: ZI, val
     CLIP("کلیپ", "ویرایش کلیپ", ZI.Scissors, EdGroup.CLIP),
     EDIT("ادیت", "ویرایش خودکار", ZI.Tune, EdGroup.CLIP),
     LAYER("لایه", "لایه‌های متن و عکس", ZI.Layers, EdGroup.LAYER),
+    VIDEO("PIP", "لایه‌های ویدئویی (PIP)", ZI.Film, EdGroup.LAYER),
     AUDIO("صدا", "صدا و موسیقی", ZI.Music, EdGroup.AUDIO),
     CAPTIONS("زیرنویس", "زیرنویس‌ها", ZI.Captions, EdGroup.TEXT),
     STYLE("استایل", "استایل زیرنویس", ZI.Palette, EdGroup.TEXT),
@@ -227,6 +237,7 @@ fun EditorScreen(
     onAddMedia: (Long) -> Unit,
     onAddLayerImage: (Long, Long) -> Unit,
     onAddAudio: (Long, Long) -> Unit,
+    onAddVideoOverlay: (Long, Long) -> Unit,
     onPickLut: () -> Unit,
     onPickKeyBg: (Long) -> Unit,
     onImportSrt: () -> Unit,
@@ -245,6 +256,7 @@ fun EditorScreen(
     var showExport by remember { mutableStateOf(false) }
     var showRename by remember { mutableStateOf(false) }
     var tlScale by remember { mutableStateOf(48f) }
+    var selectedPip by remember(ui.projectId) { mutableStateOf(-1) }
 
     val appCtx = LocalContext.current
     // frame rate of the main video: frame-accurate time readout and frame stepping
@@ -252,6 +264,7 @@ fun EditorScreen(
         value = withContext(Dispatchers.IO) { runCatching { DeviceCaps.sourceFps(appCtx, uri) }.getOrDefault(30f) }
     }
     val player = remember { PreviewPlayer(appCtx) }
+    val pipPlayers = remember { mutableMapOf<Int, PreviewPlayer>() }
     // music / voice-over clips play next to the video; recording state of the voice-over
     val audioPrev = remember { AudioPreview(appCtx) }
     var recorder by remember { mutableStateOf<VoiceRecorder?>(null) }
@@ -264,6 +277,12 @@ fun EditorScreen(
         else ui.extras.firstOrNull { it.id == idx }?.let { x -> Uri.fromFile(File(projDir, x.file)) }
     }
     val extrasNow by rememberUpdatedState(ui.extras)
+    val overlaysNow by rememberUpdatedState(ui.videoOverlays)
+    fun playerForPip(id: Int): PreviewPlayer = pipPlayers.getOrPut(id) {
+        PreviewPlayer(appCtx).also { pp ->
+            pp.uriOf = { idx -> overlaysNow.firstOrNull { it.id == idx }?.let { Uri.fromFile(File(projDir, it.file)) } }
+        }
+    }
     val audioNow by rememberUpdatedState(ui.audio)
     val duckNow by rememberUpdatedState(ui.duckMusic)
 
@@ -273,6 +292,8 @@ fun EditorScreen(
     }
     // posMs is a position on the EDITED timeline (clips laid end to end), not in a source video.
     val map = remember(ranges) { EdlMap(ranges) }
+    // Shared clip selection: tapping a timeline clip and the multi-select panel use the same state.
+    var pickedClips by remember(ui.projectId, map.segs.size) { mutableStateOf(setOf<Int>()) }
     val mapNow by rememberUpdatedState(map)
     val outPhrases = remember(ui.phrases, map) { outPhrasesOf(ui.phrases, map) }
     // where the video's own speech is (edited timeline): music ducks under it when the auto-duck switch is on and the video sound is audible
@@ -324,6 +345,7 @@ fun EditorScreen(
     fun pauseIfPlaying() {
         if (playing) {
             player.pause()
+            pipPlayers.values.forEach { it.pause() }
             playing = false
         }
     }
@@ -412,6 +434,16 @@ fun EditorScreen(
         else micLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
 
+    LaunchedEffect(ui.videoOverlays) {
+        if (ui.videoOverlays.isNotEmpty() && ui.videoOverlays.none { it.id == selectedPip }) {
+            selectedPip = ui.videoOverlays.last().id
+        }
+        val retainedIds = ui.videoOverlays.map { it.id }.toSet()
+        pipPlayers.keys.filterNot { it in retainedIds }.toList().forEach { id ->
+            pipPlayers.remove(id)?.release()
+        }
+    }
+
     LaunchedEffect(playing, recorder) {
         if (recorder != null && !playing) stopRecording()
     }
@@ -470,6 +502,16 @@ fun EditorScreen(
                     }
                 }
             }
+            val activePipIds = overlaysNow.asSequence()
+                .filter { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
+                .map { it.id }.toSet()
+            overlaysNow.forEach { pip ->
+                val pp = playerForPip(pip.id)
+                if (pip.id in activePipIds) {
+                    pp.setVolume(0f) // Independent PIP audio remains muted in 0.1.251.
+                    pp.sync(pip.id, posMs - pip.startMs, playing)
+                } else pp.pause()
+            }
             audioPrev.update(audioNow, posMs, playing, projDir, duckNow, speechNow)
             delay(33)
         }
@@ -481,6 +523,8 @@ fun EditorScreen(
     DisposableEffect(Unit) {
         onDispose {
             player.release()
+            pipPlayers.values.forEach { it.release() }
+            pipPlayers.clear()
             audioPrev.release()
             recorder?.cancel()
         }
@@ -713,6 +757,50 @@ fun EditorScreen(
                 if (curIsImage && curExtra != null) {
                     PreviewImage(File(projDir, curExtra.file).absolutePath, Modifier.fillMaxSize())
                 }
+                val activePips = ui.videoOverlays.filter { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
+                // Compose draws later children on top; reverse the list to match export sequence order.
+                activePips.asReversed().forEach { activePip ->
+                    key(activePip.id) {
+                        val layerPlayer = playerForPip(activePip.id)
+                        val pipPose = VideoOverlayKeys.pose(activePip, posMs)
+                        val pipWidth = (activePip.width * pipPose.scale).coerceIn(0.04f, 2f)
+                        val pipW = fw * pipWidth
+                        val pipAspect = activePip.sourceWidth.toFloat() / activePip.sourceHeight.toFloat()
+                        val pipH = pipW / pipAspect.coerceIn(0.2f, 5f)
+                        Box(
+                            Modifier.align(Alignment.TopStart)
+                                .offset(x = fw * (pipPose.x - pipWidth / 2f), y = fh * (pipPose.y - (pipH / fh) / 2f))
+                                .size(pipW, pipH)
+                                .graphicsLayer {
+                                    rotationZ = pipPose.rotation
+                                    alpha = pipPose.opacity.coerceIn(0f, 1f)
+                                }
+                                .clip(RoundedCornerShape(6.dp))
+                                .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
+                        ) {
+                            AndroidView(
+                                factory = { c -> TextureView(c).apply {
+                                    var ownedSurface: Surface? = null
+                                    surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+                                        override fun onSurfaceTextureAvailable(t: SurfaceTexture, w: Int, h: Int) {
+                                            ownedSurface = Surface(t)
+                                            layerPlayer.setSurface(ownedSurface)
+                                        }
+                                        override fun onSurfaceTextureSizeChanged(t: SurfaceTexture, w: Int, h: Int) {}
+                                        override fun onSurfaceTextureDestroyed(t: SurfaceTexture): Boolean {
+                                            layerPlayer.setSurface(null)
+                                            ownedSurface?.release()
+                                            ownedSurface = null
+                                            return true
+                                        }
+                                        override fun onSurfaceTextureUpdated(t: SurfaceTexture) {}
+                                    }
+                                } },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
                 Canvas(Modifier.fillMaxSize()) {
                     val lk = size.width / renderW
                     // effects lie directly on the picture, under layers and subtitles (same pictures the exporter uses)
@@ -824,6 +912,13 @@ fun EditorScreen(
                     ZIconButton(ZI.SkipNext, { nextCaption() }, enabled = ui.phrases.isNotEmpty(), size = 17.dp, box = 32.dp)
                 }
                 Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                    ZIconButton(
+                        ZI.Magnet,
+                        { vm.setSnap(!ui.snap); vm.showMessage(if (ui.snap) "چسبندگی تایم‌لاین خاموش شد" else "چسبندگی تایم‌لاین روشن شد") },
+                        size = 18.dp, box = 36.dp,
+                        tint = if (ui.snap) Z.Accent else Z.TextTer,
+                        bg = if (ui.snap) Z.AccentSoft else Color.Transparent
+                    )
                     ZIconButton(ZI.Minus, { tlScale = (tlScale / 1.4f).coerceAtLeast(14f) }, size = 18.dp, box = 36.dp, tint = Z.TextSec)
                     ZIconButton(ZI.Plus, { tlScale = (tlScale * 1.4f).coerceAtMost(220f) }, size = 18.dp, box = 36.dp, tint = Z.TextSec)
                 }
@@ -849,32 +944,34 @@ fun EditorScreen(
             scale = tlScale,
             onScale = { tlScale = it },
             videoKeys = ui.fx.vkeys.map { it.tMs },
+            selectedClips = pickedClips,
+            onClip = { i ->
+                pickedClips = setOf(i)
+                tab = EdTab.CLIP
+                toolGroup = EdGroup.CLIP
+                panelOpen = true
+            },
             onScrub = { scrub(it) },
             onReorderClip = { from, to -> applyEdl(EdlOps.moveIndex(map.segs, from, to)) },
             onTrimClip = { index, edge, out -> applyEdl(EdlOps.trimBoundary(map.segs, index, edge, out)) },
-            onMoveLayer = { id, delta -> vm.editLayer(id, "timeline") { layer ->
+            snapOn = ui.snap,
+            onMoveLayer = { id, delta -> vm.editLayer(id, "timeline", newStep = true) { layer ->
                 // Keep the complete overlay inside the edited video duration.
                 val latestStart = (map.total - layer.len).coerceAtLeast(0L)
                 val start = (layer.startMs + delta).coerceIn(0L, latestStart)
-                val shift = start - layer.startMs
                 layer.copy(startMs = start, endMs = start + layer.len)
             } },
-            onTrimLayer = { id, edge, target -> vm.editLayer(id, "timeline-trim") { layer ->
-                if (edge == 0) layer.copy(startMs = target.coerceIn(0L, layer.endMs - Layer.MIN_MS))
-                else layer.copy(endMs = target.coerceIn(layer.startMs + Layer.MIN_MS, map.total))
+            // trims go through TrimOps: the same limits the drag preview used (minimum length, project bounds, file length, keyframes)
+            onTrimLayer = { id, edge, target -> vm.editLayer(id, "timeline-trim", newStep = true) { layer ->
+                TrimOps.layer(layer, edge, target, map.total)
             } },
-            onMoveAudio = { id, delta -> vm.editAudio(id, "timeline") { clip ->
+            onMoveAudio = { id, delta -> vm.editAudio(id, "timeline", newStep = true) { clip ->
                 // Do not leave audio hanging past the end of the edited video.
                 val latestStart = (map.total - clip.lenMs).coerceAtLeast(0L)
                 clip.copy(startMs = (clip.startMs + delta).coerceIn(0L, latestStart))
             } },
-            onTrimAudio = { id, edge, target -> vm.editAudio(id, "timeline-trim") { clip ->
-                if (edge == 0) {
-                    val earliestStart = (clip.startMs - clip.inMs).coerceAtLeast(0L)
-                    val newStart = target.coerceIn(earliestStart, clip.endMs - AudioClip.MIN_MS)
-                    val cut = newStart - clip.startMs
-                    clip.copy(startMs = newStart, inMs = clip.inMs + cut, lenMs = clip.lenMs - cut)
-                } else clip.copy(lenMs = (target - clip.startMs).coerceIn(AudioClip.MIN_MS, clip.lenMs))
+            onTrimAudio = { id, edge, target -> vm.editAudio(id, "timeline-trim", newStep = true) { clip ->
+                TrimOps.audio(clip, edge, target, map.total)
             } },
             onTrimPhrase = { i, edge, target -> vm.trimPhraseAtOut(i, edge, target) },
             onPhrase = { i ->
@@ -937,7 +1034,9 @@ fun EditorScreen(
                             ripple = ui.ripple,
                             onRipple = { vm.setRipple(it) },
                             onGoto = { t -> scrub(t) },
-                            onSeekClip = { i -> seekOut(map.outStart(i)) }
+                            onSeekClip = { i -> seekOut(map.outStart(i)) },
+                            picked = pickedClips,
+                            onPicked = { pickedClips = it }
                         )
                         EdTab.KEY -> ChromaKeyPanel(
                             clipIndex = curSeg.coerceIn(0, maxOf(0, ranges.size - 1)),
@@ -975,6 +1074,17 @@ fun EditorScreen(
                             onMove = { id, d -> vm.moveLayer(id, d) },
                             onGoto = { t -> scrub(t) }
                         )
+                        EdTab.VIDEO -> VideoOverlayPanel(
+                            overlays = ui.videoOverlays,
+                            selectedId = selectedPip,
+                            posMs = posMs,
+                            totalMs = kept,
+                            onSelect = { selectedPip = it },
+                            onAdd = { pauseIfPlaying(); onAddVideoOverlay(posMs, kept) },
+                            onEdit = { id, key, change -> vm.editVideoOverlay(id, key, change) },
+                            onKeyframe = { id, time, add -> vm.setVideoOverlayKeyframe(id, time, add) },
+                            onDelete = { id -> vm.removeVideoOverlay(id); if (selectedPip == id) selectedPip = -1 }
+                        )
                         EdTab.AUDIO -> AudioPanel(
                             clips = ui.audio,
                             selectedId = ui.selectedAudio,
@@ -992,7 +1102,7 @@ fun EditorScreen(
                             onStopRecord = { stopRecording() },
                             onMainVolume = { v -> vm.setMainVolume(v) },
                             onMainMuted = { m -> vm.setMainMuted(m) },
-                            onEdit = { id, key, f -> vm.editAudio(id, key, f) },
+                            onEdit = { id, key, f -> vm.editAudio(id, key, change = f) },
                             onDelete = { id -> vm.deleteAudio(id) },
                             onDuplicate = { id -> vm.duplicateAudio(id) },
                             onSplit = { id -> vm.splitAudio(id, posMs) },
@@ -1188,6 +1298,24 @@ private fun WordStrip(words: List<Word>, posMs: Long, onSeek: (Long) -> Unit) {
 //  Drag = scrub, pinch = zoom, long-press + drag a video clip = reorder, tap a block = select it.
 // =====================================================================================
 
+private const val PV_VIDEO = 0
+private const val PV_LAYER = 1
+private const val PV_AUDIO = 2
+/** the shortest source piece a video clip can be trimmed to (the same limit EdlOps.trimBoundary uses) */
+private const val VIDEO_MIN_SRC_MS = 100L
+
+/**
+ * What the timeline draws while one item is being dragged (0.1.246). [kind] is PV_VIDEO / PV_LAYER / PV_AUDIO, [id] the clip index
+ * or the layer / audio id, [edge] 0 / 1 for a trim and -1 for a move, [startMs]..[endMs] where the item will be, [edgeMs] the time
+ * shown in the readout, [snapMs] the landmark it is stuck to (-1 = none) and [snapKind] its TimelineSnap.Kind ordinal.
+ */
+private data class DragPv(
+    val kind: Int, val id: Int, val edge: Int, val startMs: Long, val endMs: Long,
+    val edgeMs: Long, val snapMs: Long, val snapKind: Int,
+    /** the finger is up and the edit was committed: the item stays drawn at its new place until the project list catches up */
+    val done: Boolean = false
+)
+
 @Composable
 private fun Timeline(
     total: Long,
@@ -1218,9 +1346,22 @@ private fun Timeline(
     onLayer: (Int) -> Unit,
     onAudio: (Int) -> Unit,
     /** times (edited timeline) of the video picture's keyframes: drawn as diamonds on the ruler, a tap on one jumps to it */
-    videoKeys: List<Long> = emptyList()
+    videoKeys: List<Long> = emptyList(),
+    /** selected video clips, shared with the Clip panel's multi-select controls */
+    selectedClips: Set<Int> = emptySet(),
+    onClip: (Int) -> Unit = {},
+    /** magnetic snapping of dragged edges (the magnet button next to the zoom buttons) */
+    snapOn: Boolean = true
 ) {
     val ctx = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+    // the item being dragged right now; read only while drawing, so a drag redraws the timeline but never recomposes it
+    var pv by remember { mutableStateOf<DragPv?>(null) }
+    val holdingPv by remember { derivedStateOf { pv?.done == true } }
+    LaunchedEffect(holdingPv, layers, audio) {
+        // after a committed drag the preview is dropped once the new layer / audio list is drawn (or after a moment if nothing changed)
+        if (holdingPv) { kotlinx.coroutines.delay(300L); pv = null }
+    }
     val vkeysNow by rememberUpdatedState(videoKeys)
     val paint = remember {
         TextPaint(AndroidPaint.ANTI_ALIAS_FLAG).apply { typeface = ZFont.typeface(ctx, 500) ?: Typeface.DEFAULT }
@@ -1245,6 +1386,7 @@ private fun Timeline(
     val moveAudioCb by rememberUpdatedState(onMoveAudio)
     val trimAudioCb by rememberUpdatedState(onTrimAudio)
     val trimPhraseCb by rememberUpdatedState(onTrimPhrase)
+    val clipCb by rememberUpdatedState(onClip)
     val tlHeight = run {
         val base = 110 + (if (rowsN > 0) 4 + 26 * rowsN else 0)
         if (audioRowsN > 0) maxOf(base, 102 + 26 * rowsN + 26 * audioRowsN + 8) else base
@@ -1266,7 +1408,7 @@ private fun Timeline(
                         }
                     }
                 }
-                .pointerInput(map.segs, total, scale, posMs, layers, layerRows, audio, audioRows) {
+                .pointerInput(map.segs, total, scale, posMs, layers, layerRows, audio, audioRows, snapOn) {
                     var fromIndex = -1
                     var toIndex = -1
                     var trimIndex = -1
@@ -1281,51 +1423,106 @@ private fun Timeline(
                     var moveDelta = 0L
                     var movingStart = 0L
                     var movingEnd = 0L
-                    fun outAt(x: Float): Long {
-                        val pxMs = scale * density / 1000f
-                        return (posMs + (x - size.width / 2f) / pxMs).toLong().coerceIn(0L, map.total)
-                    }
+                    // precision drag (0.1.246): the finger keeps its distance to the edge it grabbed, so nothing jumps when the drag begins
+                    var grab = 0L
+                    var origEdge = 0L
+                    var boundLo = 0L
+                    var boundHi = 0L
+                    var stuck: Long? = null
+                    var lastHit = -1L
+                    var targets: List<TimelineSnap.Target> = emptyList()
+                    val window = TimelineSnap.windowMs(scale)
+                    val pxMsNow = scale * density / 1000f
+                    fun rawAt(x: Float): Long = (posMs + (x - size.width / 2f) / pxMsNow).toLong()
+                    fun outAt(x: Float): Long = rawAt(x).coerceIn(0L, map.total)
+                    fun xAt(ms: Long): Float = size.width / 2f + (ms - posMs) * pxMsNow
                     fun indexAt(x: Float): Int = if (map.segs.isEmpty()) -1 else map.locate(outAt(x).coerceAtMost((map.total - 1L).coerceAtLeast(0L))).first
+                    fun videoEdges(): List<Long> {
+                        val e = ArrayList<Long>(map.segs.size * 2)
+                        map.segs.indices.forEach { i -> e.add(map.outStart(i)); e.add(map.outStart(i) + map.segs[i].outLen) }
+                        return e
+                    }
+                    /** -1 = the touch is not on this block, 0 / 1 = its start / end edge (trim), 2 = its body (move). The edge zone shrinks on short blocks so they can still be moved. */
+                    fun classify(x: Float, s: Long, e: Long): Int {
+                        val x1 = xAt(s)
+                        val x2 = xAt(e)
+                        val slack = 8f * density
+                        if (x < x1 - slack || x > x2 + slack) return -1
+                        if (x < x1) return 0
+                        if (x > x2) return 1
+                        val zone = minOf(18f * density, (x2 - x1) / 3f)
+                        val ds = x - x1
+                        val de = x2 - x
+                        return if (ds <= zone && ds <= de) 0 else if (de <= zone) 1 else 2
+                    }
+                    fun feedback(hit: TimelineSnap.Hit?) {
+                        if (hit != null && hit.ms != lastHit) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        lastHit = hit?.ms ?: -1L
+                    }
+                    fun clearDrag() {
+                        fromIndex = -1; toIndex = -1; trimIndex = -1; trimEdge = -1; trimPhrase = -1
+                        moveLayerId = -1; moveAudioId = -1; trimLayerId = -1; trimAudioId = -1
+                        moveDelta = 0L; grab = 0L; stuck = null; lastHit = -1L; targets = emptyList()
+                        pv = null
+                    }
                     detectDragGesturesAfterLongPress(
                         onDragStart = { o ->
-                            fromIndex = -1; toIndex = -1; trimIndex = -1; trimEdge = -1; trimPhrase = -1
-                            moveLayerId = -1; moveAudioId = -1; trimLayerId = -1; trimAudioId = -1; trimEdge = -1; moveDelta = 0L
+                            clearDrag()
                             val layerTopPx = 102f * density
                             val audioTopPx = (102f + 26f * LayerOps.rowCount(layerRows)) * density
                             val at = outAt(o.x)
                             if (o.y >= audioTopPx && audioRows.isNotEmpty()) {
                                 val row = ((o.y - audioTopPx) / (26f * density)).toInt()
-                                for (i in audio.indices.reversed()) if (audioRows.getOrNull(i) == row && at >= audio[i].startMs && at <= audio[i].endMs) {
+                                for (i in audio.indices.reversed()) {
+                                    if (audioRows.getOrNull(i) != row) continue
                                     val c = audio[i]
-                                    val edgeRadius = (16f * density / (scale * density / 1000f)).toLong().coerceIn(70L, 450L)
-                                    if (kotlin.math.abs(at - c.startMs) <= edgeRadius) { trimAudioId = c.id; trimEdge = 0 }
-                                    else if (kotlin.math.abs(at - c.endMs) <= edgeRadius) { trimAudioId = c.id; trimEdge = 1 }
-                                    else moveAudioId = c.id
+                                    val part = classify(o.x, c.startMs, c.endMs)
+                                    if (part < 0) continue
+                                    targets = if (snapOn) TimelineSnap.targets(map.total, posMs, videoEdges(), layers, audio, skipAudio = c.id) else emptyList()
+                                    if (part <= 1) {
+                                        trimAudioId = c.id; trimEdge = part
+                                        origEdge = if (part == 0) c.startMs else c.endMs
+                                        trimTarget = origEdge
+                                        grab = origEdge - rawAt(o.x)
+                                        val b = TrimOps.audioBounds(c, part, map.total)
+                                        boundLo = b.first; boundHi = b.second
+                                        pv = DragPv(PV_AUDIO, c.id, part, c.startMs, c.endMs, origEdge, -1L, -1)
+                                    } else {
+                                        moveAudioId = c.id
+                                        dragOrigin = rawAt(o.x)
+                                        movingStart = c.startMs
+                                        movingEnd = c.endMs
+                                        pv = DragPv(PV_AUDIO, c.id, -1, c.startMs, c.endMs, c.startMs, -1L, -1)
+                                    }
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     break
-                                }
-                                if (trimAudioId >= 0) trimTarget = if (trimEdge == 0) audio.first { it.id == trimAudioId }.startMs else audio.first { it.id == trimAudioId }.endMs
-                                if (moveAudioId >= 0) {
-                                    dragOrigin = at
-                                    val moving = audio.first { it.id == moveAudioId }
-                                    movingStart = moving.startMs
-                                    movingEnd = moving.endMs
                                 }
                             } else if (o.y >= layerTopPx && layers.isNotEmpty()) {
                                 val row = ((o.y - layerTopPx) / (26f * density)).toInt()
-                                for (i in layers.indices.reversed()) if (layerRows.getOrNull(i) == row && at >= layers[i].startMs && at <= layers[i].endMs) {
+                                for (i in layers.indices.reversed()) {
+                                    if (layerRows.getOrNull(i) != row) continue
                                     val l = layers[i]
-                                    val edgeRadius = (16f * density / (scale * density / 1000f)).toLong().coerceIn(70L, 450L)
-                                    if (kotlin.math.abs(at - l.startMs) <= edgeRadius) { trimLayerId = l.id; trimEdge = 0 }
-                                    else if (kotlin.math.abs(at - l.endMs) <= edgeRadius) { trimLayerId = l.id; trimEdge = 1 }
-                                    else moveLayerId = l.id
+                                    val part = classify(o.x, l.startMs, l.endMs)
+                                    if (part < 0) continue
+                                    if (l.locked) break // a locked layer does not move or trim
+                                    targets = if (snapOn) TimelineSnap.targets(map.total, posMs, videoEdges(), layers, audio, skipLayer = l.id) else emptyList()
+                                    if (part <= 1) {
+                                        trimLayerId = l.id; trimEdge = part
+                                        origEdge = if (part == 0) l.startMs else l.endMs
+                                        trimTarget = origEdge
+                                        grab = origEdge - rawAt(o.x)
+                                        val b = TrimOps.layerBounds(l, part, map.total)
+                                        boundLo = b.first; boundHi = b.second
+                                        pv = DragPv(PV_LAYER, l.id, part, l.startMs, l.endMs, origEdge, -1L, -1)
+                                    } else {
+                                        moveLayerId = l.id
+                                        dragOrigin = rawAt(o.x)
+                                        movingStart = l.startMs
+                                        movingEnd = l.endMs
+                                        pv = DragPv(PV_LAYER, l.id, -1, l.startMs, l.endMs, l.startMs, -1L, -1)
+                                    }
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     break
-                                }
-                                if (trimLayerId >= 0) trimTarget = if (trimEdge == 0) layers.first { it.id == trimLayerId }.startMs else layers.first { it.id == trimLayerId }.endMs
-                                if (moveLayerId >= 0) {
-                                    dragOrigin = at
-                                    val moving = layers.first { it.id == moveLayerId }
-                                    movingStart = moving.startMs
-                                    movingEnd = moving.endMs
                                 }
                             } else if (o.y in (62f * density)..(98f * density) && phrasesNow.isNotEmpty()) {
                                 // long-press near the start or end of a subtitle, then drag it
@@ -1338,19 +1535,35 @@ private fun Timeline(
                                     if (de <= edgeRadius && de < best) { best = de; trimPhrase = op.idx; trimEdge = 1; trimTarget = op.endMs }
                                 }
                             } else if (o.y in (26f * density)..(58f * density) && map.segs.isNotEmpty()) {
+                                // the nearest clip edge within reach; on a joint between two clips the side the finger is on decides
                                 val hitRadius = 18f * density
-                                val x = o.x
+                                var bestDist = Float.MAX_VALUE
                                 map.segs.indices.forEach { i ->
-                                    val left = size.width / 2f + (map.outStart(i) - posMs) * scale * density / 1000f
-                                    val right = size.width / 2f + (map.outStart(i) + map.segs[i].outLen - posMs) * scale * density / 1000f
-                                    if (kotlin.math.abs(x - left) <= hitRadius) { trimIndex = i; trimEdge = 0 }
-                                    if (kotlin.math.abs(x - right) <= hitRadius) { trimIndex = i; trimEdge = 1 }
+                                    if (map.segs[i].len <= VIDEO_MIN_SRC_MS) return@forEach // too short to trim: it can still be reordered
+                                    for (edge in 0..1) {
+                                        val ex = xAt(if (edge == 0) map.outStart(i) else map.outStart(i) + map.segs[i].outLen)
+                                        val dist = kotlin.math.abs(o.x - ex)
+                                        if (dist > hitRadius) continue
+                                        val sideWins = if (o.x < ex) edge == 1 else edge == 0
+                                        if (dist < bestDist - 0.5f || (kotlin.math.abs(dist - bestDist) <= 0.5f && sideWins)) {
+                                            bestDist = dist; trimIndex = i; trimEdge = edge
+                                        }
+                                    }
                                 }
                                 if (trimIndex >= 0) {
                                     val i = trimIndex
+                                    val sg = map.segs[i]
                                     val start = map.outStart(i)
-                                    val len = map.segs[i].outLen
-                                    trimTarget = if (trimEdge == 0) start else start + len
+                                    val len = sg.outLen
+                                    val minOut = (VIDEO_MIN_SRC_MS / sg.speed.coerceAtLeast(0.01f)).toLong().coerceAtLeast(1L)
+                                    origEdge = if (trimEdge == 0) start else start + len
+                                    trimTarget = origEdge
+                                    grab = origEdge - rawAt(o.x)
+                                    boundLo = if (trimEdge == 0) start else start + minOut
+                                    boundHi = if (trimEdge == 0) start + len - minOut else start + len
+                                    targets = if (snapOn) TimelineSnap.targets(map.total, posMs, videoEdges(), layers, audio) else emptyList()
+                                    pv = DragPv(PV_VIDEO, i, trimEdge, start, start + len, origEdge, -1L, -1)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 } else {
                                     fromIndex = indexAt(o.x)
                                     toIndex = fromIndex
@@ -1358,74 +1571,59 @@ private fun Timeline(
                             }
                         },
                         onDragEnd = {
+                            // an edge that ends where it began changes nothing (and so adds no undo step)
+                            var keep = false
                             if (trimPhrase >= 0) trimPhraseCb(trimPhrase, trimEdge, trimTarget)
-                            else if (trimIndex >= 0) trimCb(trimIndex, trimEdge, trimTarget)
-                            else if (trimLayerId >= 0) trimLayerCb(trimLayerId, trimEdge, trimTarget)
-                            else if (trimAudioId >= 0) trimAudioCb(trimAudioId, trimEdge, trimTarget)
-                            else if (moveLayerId >= 0 && moveDelta != 0L) moveLayerCb(moveLayerId, moveDelta)
-                            else if (moveAudioId >= 0 && moveDelta != 0L) moveAudioCb(moveAudioId, moveDelta)
+                            else if (trimIndex >= 0) { if (trimTarget != origEdge) trimCb(trimIndex, trimEdge, trimTarget) }
+                            else if (trimLayerId >= 0) { if (trimTarget != origEdge) { trimLayerCb(trimLayerId, trimEdge, trimTarget); keep = true } }
+                            else if (trimAudioId >= 0) { if (trimTarget != origEdge) { trimAudioCb(trimAudioId, trimEdge, trimTarget); keep = true } }
+                            else if (moveLayerId >= 0 && moveDelta != 0L) { moveLayerCb(moveLayerId, moveDelta); keep = true }
+                            else if (moveAudioId >= 0 && moveDelta != 0L) { moveAudioCb(moveAudioId, moveDelta); keep = true }
                             else if (fromIndex >= 0 && toIndex >= 0 && fromIndex != toIndex) reorderCb(fromIndex, toIndex)
-                            fromIndex = -1; toIndex = -1; trimIndex = -1; trimPhrase = -1; trimLayerId = -1; trimAudioId = -1; trimEdge = -1; moveLayerId = -1; moveAudioId = -1
+                            // a committed layer / audio drag stays drawn where it landed (no one-frame jump back); video edits re-lay the whole track, so they clear at once
+                            val held = if (keep) pv?.copy(done = true, snapMs = -1L, snapKind = -1) else null
+                            clearDrag()
+                            pv = held
                         },
-                        onDragCancel = { fromIndex = -1; toIndex = -1; trimIndex = -1; trimPhrase = -1; trimLayerId = -1; trimAudioId = -1; trimEdge = -1; moveLayerId = -1; moveAudioId = -1 }
+                        onDragCancel = { clearDrag() }
                     ) { change, _ ->
+                        val x = change.position.x
                         if (trimPhrase >= 0) {
-                            trimTarget = outAt(change.position.x)
+                            trimTarget = outAt(x)
                             change.consume()
-                        } else if (trimLayerId >= 0 || trimAudioId >= 0) {
-                            val id = if (trimLayerId >= 0) trimLayerId else trimAudioId
-                            val itemStart = if (trimLayerId >= 0) layers.first { it.id == id }.startMs else audio.first { it.id == id }.startMs
-                            val itemEnd = if (trimLayerId >= 0) layers.first { it.id == id }.endMs else audio.first { it.id == id }.endMs
-                            trimTarget = outAt(change.position.x).coerceIn(if (trimEdge == 0) 0L else itemStart + 200L, if (trimEdge == 0) itemEnd - 200L else map.total)
+                        } else if (trimLayerId >= 0 || trimAudioId >= 0 || trimIndex >= 0) {
+                            val r = TimelineSnap.trim(rawAt(x) + grab, boundLo, boundHi, targets, window, stuck)
+                            trimTarget = r.ms
+                            stuck = r.hit?.ms
+                            feedback(r.hit)
+                            val sMs = r.hit?.ms ?: -1L
+                            val sKind = r.hit?.kind?.ordinal ?: -1
+                            // the preview range is computed by the SAME functions that commit the edit
+                            pv = if (trimAudioId >= 0) {
+                                val c = audio.firstOrNull { it.id == trimAudioId }
+                                if (c == null) null else TrimOps.audio(c, trimEdge, r.ms, map.total).let { DragPv(PV_AUDIO, c.id, trimEdge, it.startMs, it.endMs, r.ms, sMs, sKind) }
+                            } else if (trimLayerId >= 0) {
+                                val l = layers.firstOrNull { it.id == trimLayerId }
+                                if (l == null) null else TrimOps.layer(l, trimEdge, r.ms, map.total).let { DragPv(PV_LAYER, l.id, trimEdge, it.startMs, it.endMs, r.ms, sMs, sKind) }
+                            } else {
+                                val sg = map.segs.getOrNull(trimIndex)
+                                if (sg == null) null else DragPv(PV_VIDEO, trimIndex, trimEdge, map.outStart(trimIndex), map.outStart(trimIndex) + sg.outLen, r.ms, sMs, sKind)
+                            }
                             change.consume()
                         } else if (moveLayerId >= 0 || moveAudioId >= 0) {
-                            val requestedDelta = outAt(change.position.x) - dragOrigin
                             val minDelta = -movingStart
                             val maxDelta = (map.total - movingEnd).coerceAtLeast(minDelta)
-                            val rawDelta = requestedDelta.coerceIn(minDelta, maxDelta)
-                            val rawStart = movingStart + rawDelta
-                            val rawEnd = movingEnd + rawDelta
-                            val anchors = ArrayList<Long>()
-                            // Project boundaries and playhead are useful alignment targets.
-                            anchors.add(0L)
-                            anchors.add(map.total)
-                            anchors.add(posMs)
-                            map.segs.indices.forEach { i ->
-                                anchors.add(map.outStart(i))
-                                anchors.add(map.outStart(i) + map.segs[i].outLen)
-                            }
-                            layers.filter { it.id != moveLayerId }.forEach {
-                                anchors.add(it.startMs); anchors.add(it.endMs)
-                            }
-                            audio.filter { it.id != moveAudioId }.forEach {
-                                anchors.add(it.startMs); anchors.add(it.endMs)
-                            }
-                            // Snap either edge to the nearest timeline landmark (about 120 ms).
-                            val snapWindow = (120f / scale.coerceAtLeast(1f) * 1000f).toLong().coerceIn(35L, 180L)
-                            var bestDelta = rawDelta
-                            var bestDistance = snapWindow + 1L
-                            anchors.forEach { anchor ->
-                                val ds = anchor - rawStart
-                                val de = anchor - rawEnd
-                                if (kotlin.math.abs(ds) < bestDistance) {
-                                    bestDistance = kotlin.math.abs(ds); bestDelta = rawDelta + ds
-                                }
-                                if (kotlin.math.abs(de) < bestDistance) {
-                                    bestDistance = kotlin.math.abs(de); bestDelta = rawDelta + de
-                                }
-                            }
-                            // Snapping must never push the clip outside the project bounds.
-                            val snapped = if (bestDistance <= snapWindow) bestDelta else rawDelta
-                            moveDelta = snapped.coerceIn(minDelta, maxDelta)
-                            change.consume()
-                        } else if (trimIndex >= 0) {
-                            val i = trimIndex
-                            val start = map.outStart(i)
-                            val len = map.segs[i].outLen
-                            trimTarget = outAt(change.position.x).coerceIn(start + 100L, start + len - 100L)
+                            val r = TimelineSnap.move(movingStart, movingEnd, rawAt(x) - dragOrigin, minDelta, maxDelta, targets, window, stuck)
+                            moveDelta = r.delta
+                            stuck = r.hit?.ms
+                            feedback(r.hit)
+                            pv = DragPv(
+                                if (moveLayerId >= 0) PV_LAYER else PV_AUDIO, if (moveLayerId >= 0) moveLayerId else moveAudioId, -1,
+                                movingStart + r.delta, movingEnd + r.delta, r.anchorMs(movingStart, movingEnd), r.hit?.ms ?: -1L, r.hit?.kind?.ordinal ?: -1
+                            )
                             change.consume()
                         } else if (fromIndex >= 0) {
-                            toIndex = indexAt(change.position.x)
+                            toIndex = indexAt(x)
                             change.consume()
                         }
                     }
@@ -1437,6 +1635,11 @@ private fun Timeline(
                         var hit = -1
                         var layerHit = -1
                         var audioHit = -1
+                        var clipHit = -1
+                        if (o.y in (26f * density)..(58f * density) && map.segs.isNotEmpty()) {
+                            val clipTime = ms.coerceAtMost((total - 1L).coerceAtLeast(0L))
+                            clipHit = map.locate(clipTime).first
+                        }
                         if (o.y >= 100f * density) {
                             val audioTop = (102f + 26f * LayerOps.rowCount(rowsNow)) * density
                             if (o.y >= audioTop) {
@@ -1464,6 +1667,7 @@ private fun Timeline(
                         // tap on a video keyframe diamond (ruler) jumps to that key
                         val keyTap = if (o.y < 28f * density) vkeysNow.minByOrNull { kotlin.math.abs(it - ms) }?.takeIf { kotlin.math.abs(it - ms) * pxMs <= 16f * density } else null
                         if (keyTap != null) { scrubCb(keyTap); return@detectTapGestures }
+                        if (clipHit >= 0) clipCb(clipHit)
                         if (layerHit >= 0) layerCb(layerHit) else if (audioHit >= 0) audioCb(audioHit) else if (hit >= 0) phraseCb(hit) else scrubCb(ms)
                     }
                 }
@@ -1471,6 +1675,7 @@ private fun Timeline(
             val d = density
             val w = size.width
             val h = size.height
+            val pvNow = pv
             val pxMs = scale * d / 1000f
             val cx = w / 2f
             val pos = posMs
@@ -1536,11 +1741,12 @@ private fun Timeline(
                 if (x2 < 0f || x1 > w) continue
                 val bw = maxOf(3f * d, x2 - x1)
                 val cur = i == curSeg
+                val selected = i in selectedClips
                 val photo = kinds.getOrNull(i) == 2
                 val fill = if (photo) (if (cur) Color(0xFF343C4A) else Color(0xFF272D38)) else (if (cur) Color(0xFF1B4A63) else Color(0xFF15384A))
-                val edge = if (cur) Z.Accent else if (photo) Z.BorderStrong else Z.AccentLine
+                val edge = if (selected) Z.Warn else if (cur) Z.Accent else if (photo) Z.BorderStrong else Z.AccentLine
                 drawRoundRect(fill, Offset(x1, lane1Top), Size(bw, laneH), r)
-                drawRoundRect(edge, Offset(x1, lane1Top), Size(bw, laneH), r, style = Stroke((if (cur) 1.6f else 1f) * d))
+                drawRoundRect(edge, Offset(x1, lane1Top), Size(bw, laneH), r, style = Stroke((if (selected) 2.4f else if (cur) 1.6f else 1f) * d))
                 // Visible trim grips on every clip make the editable edges discoverable;
                 // the selected clip gets stronger contrast, while all clips remain draggable.
                 if (bw > 14f * d) {
@@ -1562,6 +1768,16 @@ private fun Timeline(
                     val shown = TextUtils.ellipsize(label, paint, bw - 18f * d, TextUtils.TruncateAt.END).toString()
                     drawIntoCanvas { it.nativeCanvas.drawText(shown, tx, lane1Top + laneH / 2f + 4f * d, paint) }
                 }
+            }
+
+            // ---- video clip edge being trimmed: the part that will be cut away is dimmed, the edge gets a bar ----
+            val pvV = pvNow?.takeIf { it.kind == PV_VIDEO }
+            if (pvV != null) {
+                val ex = xOf(pvV.edgeMs)
+                val a = if (pvV.edge == 0) xOf(pvV.startMs) else ex
+                val b = if (pvV.edge == 0) ex else xOf(pvV.endMs)
+                drawRect(Color(0xAA0A0B0D), Offset(a, lane1Top), Size(maxOf(0f, b - a), laneH))
+                drawRoundRect(Z.Text, Offset(ex - 1.5f * d, lane1Top - 2f * d), Size(3f * d, laneH + 4f * d), CornerRadius(2f * d, 2f * d))
             }
 
             // ---- subtitle track ----
@@ -1594,11 +1810,25 @@ private fun Timeline(
                 }
             }
 
+            // the selected range of the item being dragged: tinted, strong outline, grips (the dragged edge brighter)
+            fun dragFrame(x: Float, top: Float, bw: Float, hh: Float, rr: CornerRadius, edge: Int) {
+                drawRoundRect(Z.Accent, Offset(x, top), Size(bw, hh), rr, alpha = 0.22f)
+                drawRoundRect(Z.Accent, Offset(x, top), Size(bw, hh), rr, style = Stroke(2.2f * d))
+                if (bw > 14f * d) {
+                    val gh = hh - 10f * d
+                    val gy = top + 5f * d
+                    val gr = CornerRadius(2f * d, 2f * d)
+                    drawRoundRect(if (edge == 0) Z.Text else Z.Accent, Offset(x + 2f * d, gy), Size((if (edge == 0) 4f else 3f) * d, gh), gr)
+                    drawRoundRect(if (edge == 1) Z.Text else Z.Accent, Offset(x + bw - (if (edge == 1) 6f else 5f) * d, gy), Size((if (edge == 1) 4f else 3f) * d, gh), gr)
+                }
+            }
+
             // ---- text / picture layers, one row per overlapping group ----
             for (i in layers.indices) {
                 val l = layers[i]
-                val x1 = xOf(l.startMs) + 1f * d
-                val x2 = xOf(l.endMs) - 1f * d
+                val pvL = pvNow?.takeIf { it.kind == PV_LAYER && it.id == l.id }
+                val x1 = xOf(pvL?.startMs ?: l.startMs) + 1f * d
+                val x2 = xOf(pvL?.endMs ?: l.endMs) - 1f * d
                 if (x2 < 0f || x1 > w) continue
                 val bw = maxOf(3f * d, x2 - x1)
                 val top = layerTop0 + (layerRows.getOrNull(i) ?: 0) * layerStep
@@ -1611,6 +1841,7 @@ private fun Timeline(
                     val kx = xOf(l.startMs + k.tMs)
                     if (kx >= x1 && kx <= x1 + bw) drawCircle(Z.Accent, 3f * d, Offset(kx, top + layerRowH - 5f * d))
                 }
+                if (pvL != null) dragFrame(x1, top, bw, layerRowH, lr, pvL.edge)
                 if (bw > 36f * d) {
                     paint.textSize = 11f * d
                     paint.textAlign = AndroidPaint.Align.RIGHT
@@ -1624,8 +1855,11 @@ private fun Timeline(
             // ---- music / voice-over: real waveform of the file, fades drawn as dark corners ----
             for (i in audio.indices) {
                 val c = audio[i]
-                val x1 = xOf(c.startMs) + 1f * d
-                val x2 = xOf(c.endMs) - 1f * d
+                val pvA = pvNow?.takeIf { it.kind == PV_AUDIO && it.id == c.id }
+                val x1 = xOf(pvA?.startMs ?: c.startMs) + 1f * d
+                val x2 = xOf(pvA?.endMs ?: c.endMs) - 1f * d
+                // a start trim moves the in-point of the file: the waveform stays where it was while the edge moves over it
+                val inDraw = c.inMs + (if (pvA != null && pvA.edge == 0) pvA.startMs - c.startMs else 0L)
                 if (x2 < 0f || x1 > w) continue
                 val bw = maxOf(3f * d, x2 - x1)
                 val top = audioTop0 + (audioRows.getOrNull(i) ?: 0) * layerStep
@@ -1641,8 +1875,8 @@ private fun Timeline(
                     var x = maxOf(x1, 0f)
                     val xEnd = minOf(x1 + bw, w)
                     while (x < xEnd) {
-                        val t0 = c.inMs + (x - x1) / pxMs
-                        val t1 = c.inMs + (x + colStep - x1) / pxMs
+                        val t0 = inDraw + (x - x1) / pxMs
+                        val t1 = inDraw + (x + colStep - x1) / pxMs
                         val i0 = (t0 * Waveform.PER_SEC / 1000f).toInt().coerceAtLeast(0)
                         val i1 = maxOf(i0, (t1 * Waveform.PER_SEC / 1000f).toInt())
                         if (i0 < pk.size) {
@@ -1659,16 +1893,17 @@ private fun Timeline(
                 }
                 val shade = Color(0x99000000)
                 if (c.fadeInMs > 0L) {
-                    val fw = c.fadeInMs * pxMs
+                    val fw = minOf(c.fadeInMs * pxMs, bw)
                     val tri = Path().apply { moveTo(x1, top); lineTo(x1 + fw, top); lineTo(x1, top + layerRowH); close() }
                     drawPath(tri, shade)
                 }
                 if (c.fadeOutMs > 0L) {
-                    val fw = c.fadeOutMs * pxMs
+                    val fw = minOf(c.fadeOutMs * pxMs, bw)
                     val tri = Path().apply { moveTo(x1 + bw, top); lineTo(x1 + bw - fw, top); lineTo(x1 + bw, top + layerRowH); close() }
                     drawPath(tri, shade)
                 }
                 drawRoundRect(if (sel) Z.Accent else Z.BorderStrong, Offset(x1, top), Size(bw, layerRowH), ar, style = Stroke((if (sel) 1.6f else 1f) * d))
+                if (pvA != null) dragFrame(x1, top, bw, layerRowH, ar, pvA.edge)
                 if (sel && bw > 18f * d) {
                     drawRoundRect(Z.Text, Offset(x1 + 2f * d, top + 7f * d), Size(3f * d, layerRowH - 14f * d), CornerRadius(2f * d, 2f * d))
                     drawRoundRect(Z.Text, Offset(x1 + bw - 5f * d, top + 7f * d), Size(3f * d, layerRowH - 14f * d), CornerRadius(2f * d, 2f * d))
@@ -1704,6 +1939,44 @@ private fun Timeline(
                 close()
             }
             drawPath(head, Z.Text)
+
+            // ---- drag feedback (0.1.246): snap indicator and a precise readout of the dragged edge ----
+            val pvF = pvNow
+            if (pvF != null) {
+                val snapColor = Color(0xFFFFD84D)
+                if (pvF.snapMs >= 0L) {
+                    val sx = xOf(pvF.snapMs)
+                    drawLine(snapColor, Offset(sx, 0f), Offset(sx, h), strokeWidth = 1.5f * d)
+                    drawCircle(snapColor, 3.5f * d, Offset(sx, 4f * d))
+                    drawCircle(snapColor, 3.5f * d, Offset(sx, h - 4f * d))
+                }
+                val dur = fa("%.2f".format(java.util.Locale.US, (pvF.endMs - pvF.startMs) / 1000f))
+                val main = faTimePrecise(pvF.edgeMs) + "  ·  " + app.zircut.i18n.Lang.tr("مدت " + dur + " ثانیه")
+                val snapName = if (pvF.snapMs < 0L) "" else app.zircut.i18n.Lang.tr(
+                    when (pvF.snapKind) {
+                        TimelineSnap.Kind.PLAYHEAD.ordinal -> "چسبیده به پلی‌هد"
+                        TimelineSnap.Kind.PROJECT.ordinal -> if (pvF.snapMs <= 0L) "چسبیده به ابتدای پروژه" else "چسبیده به انتهای پروژه"
+                        TimelineSnap.Kind.VIDEO.ordinal -> "چسبیده به کلیپ ویدیو"
+                        TimelineSnap.Kind.LAYER.ordinal -> "چسبیده به لایه"
+                        else -> "چسبیده به صدا"
+                    }
+                )
+                paint.textSize = 10.5f * d
+                paint.textAlign = AndroidPaint.Align.LEFT
+                val gap = if (snapName.isEmpty()) 0f else paint.measureText("  ·  ")
+                val mainW = paint.measureText(main)
+                val snapW = if (snapName.isEmpty()) 0f else paint.measureText(snapName)
+                val pillW = mainW + gap + snapW + 16f * d
+                val pillX = (xOf(pvF.edgeMs) - pillW / 2f).coerceIn(4f * d, maxOf(4f * d, w - pillW - 4f * d))
+                drawRoundRect(Color(0xF2111317), Offset(pillX, 3f * d), Size(pillW, 19f * d), CornerRadius(9f * d, 9f * d))
+                drawRoundRect(if (pvF.snapMs >= 0L) snapColor else Z.BorderStrong, Offset(pillX, 3f * d), Size(pillW, 19f * d), CornerRadius(9f * d, 9f * d), style = Stroke(1f * d))
+                paint.color = Z.Text.toArgb()
+                drawIntoCanvas { it.nativeCanvas.drawText(main, pillX + 8f * d, 16.2f * d, paint) }
+                if (snapName.isNotEmpty()) {
+                    paint.color = snapColor.toArgb()
+                    drawIntoCanvas { it.nativeCanvas.drawText("  ·  " + snapName, pillX + 8f * d + mainW, 16.2f * d, paint) }
+                }
+            }
         }
     }
 }
@@ -2064,6 +2337,112 @@ private fun ColorRow(colors: List<Int>, selected: Int, allowNone: Boolean, onPic
                     .press(true) { onPick(c) }
             )
         }
+    }
+}
+
+@Composable
+private fun VideoOverlayPanel(
+    overlays: List<VideoOverlay>, selectedId: Int, posMs: Long, totalMs: Long,
+    onSelect: (Int) -> Unit, onAdd: () -> Unit,
+    onEdit: (Int, String, (VideoOverlay) -> VideoOverlay) -> Unit,
+    onKeyframe: (Int, Long, Boolean) -> Unit,
+    onDelete: (Int) -> Unit
+) {
+    val selected = overlays.firstOrNull { it.id == selectedId }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Z.S3)) {
+        ZButton("افزودن ویدئوی MP4 (حداکثر ${VideoOverlay.MAX_LAYERS} لایه)", onAdd, Modifier.fillMaxWidth(), icon = ZI.Plus, compact = true,
+            enabled = overlays.size < VideoOverlay.MAX_LAYERS)
+        if (overlays.isNotEmpty()) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
+                items(overlays.size) { i ->
+                    val v = overlays[i]
+                    ZChip("ویدئو ${fa(v.id)}", v.id == selectedId, { onSelect(v.id) })
+                }
+            }
+        }
+        if (selected == null) {
+            Txt("تا ${VideoOverlay.MAX_LAYERS} ویدئوی مستقل می‌توانند هم‌زمان روی تصویر اصلی قرار بگیرند. زمان، جایگاه، اندازه و حرکت هر لایه جداگانه تنظیم می‌شود.", style = ZType.caption, color = Z.TextSec)
+            return@Column
+        }
+
+        val pose = VideoOverlayKeys.pose(selected, posMs)
+        fun updatePose(key: String, transform: (app.zircut.timeline.VideoOverlayPose) -> app.zircut.timeline.VideoOverlayPose) {
+            onEdit(selected.id, key) { current ->
+                val currentPose = VideoOverlayKeys.pose(current, posMs)
+                val nextPose = transform(currentPose)
+                if (current.keys.isEmpty()) {
+                    current.copy(
+                        x = nextPose.x,
+                        y = nextPose.y,
+                        width = (current.width * nextPose.scale).coerceIn(0.08f, 1f),
+                        rotation = nextPose.rotation,
+                        opacity = nextPose.opacity
+                    )
+                } else {
+                    VideoOverlayKeys.upsert(current, posMs, nextPose)
+                }
+            }
+        }
+
+        Txt("زمان ${faTime(selected.startMs)} تا ${faTime(selected.endMs)}", style = ZType.labelStrong)
+        val maxStart = (totalMs - selected.len).coerceAtLeast(0L)
+        if (maxStart > 0L) ZSlider("شروع روی تایم‌لاین", selected.startMs.toFloat(), 0f, maxStart.toFloat(), { v ->
+            val start = v.toLong().coerceIn(0L, maxStart)
+            onEdit(selected.id, "timing") { it.copy(startMs = start, endMs = start + it.len) }
+        }, readout = { faTime(it.toLong()) })
+        val maxDuration = minOf(selected.sourceDurationMs, (totalMs - selected.startMs).coerceAtLeast(0L))
+        if (maxDuration >= 200L) ZSlider("مدت نمایش", selected.len.toFloat(), 200f, maxDuration.toFloat(), { v ->
+            onEdit(selected.id, "duration") { it.copy(endMs = (it.startMs + v.toLong()).coerceAtMost(totalMs)) }
+        }, readout = { faTime(it.toLong()) })
+
+        Txt("کی‌فریم ترنسفورم", style = ZType.labelStrong, color = Z.TextSec)
+        val relative = posMs - selected.startMs
+        val keyHere = selected.keys.minByOrNull { kotlin.math.abs(it.tMs - relative) }
+            ?.takeIf { kotlin.math.abs(it.tMs - relative) <= VideoOverlayKeys.NEAR_MS }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
+            ClipTool(ZI.Plus, if (keyHere == null) "ثبت کی‌فریم" else "به‌روزرسانی کلید",
+                posMs >= selected.startMs && posMs < selected.endMs, Z.Accent, Modifier.weight(1f)) {
+                onKeyframe(selected.id, posMs, true)
+            }
+            ClipTool(ZI.Trash, "حذف کی‌فریم", keyHere != null, Z.Danger, Modifier.weight(1f)) {
+                onKeyframe(selected.id, posMs, false)
+            }
+        }
+        if (keyHere != null) {
+            Txt("نوع حرکت بین این کلید و کلید بعدی", style = ZType.caption, color = Z.TextSec)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
+                listOf(LayerKeys.EASE_SMOOTH to "نرم", LayerKeys.EASE_LINEAR to "خطی", LayerKeys.EASE_HOLD to "ثابت").forEach { (value, label) ->
+                    ZChip(label, keyHere.ease == value, {
+                        onEdit(selected.id, "keyframe-ease") { current ->
+                            current.copy(keys = current.keys.map { k ->
+                                if (k.tMs == keyHere.tMs) k.copy(ease = value) else k
+                            })
+                        }
+                    })
+                }
+            }
+        }
+
+        ZSlider("موقعیت افقی", pose.x, 0.05f, 0.95f, { v ->
+            updatePose("x") { it.copy(x = v) }
+        }, readout = ::pct)
+        ZSlider("موقعیت عمودی", pose.y, 0.05f, 0.95f, { v ->
+            updatePose("y") { it.copy(y = v) }
+        }, readout = ::pct)
+        ZSlider("اندازه", (selected.width * pose.scale).coerceIn(0.08f, 1f), 0.08f, 1f, { v ->
+            updatePose("scale") { it.copy(scale = (v / selected.width).coerceIn(0.1f, 6f)) }
+        }, readout = ::pct)
+        ZSlider("چرخش", pose.rotation, -180f, 180f, { v ->
+            updatePose("rotation") { it.copy(rotation = v) }
+        }, readout = { "${it.toInt()}°" })
+        ZSlider("شفافیت", pose.opacity, 0.05f, 1f, { v ->
+            updatePose("opacity") { it.copy(opacity = v) }
+        }, readout = ::pct)
+        ZToggleRow(ZI.Film, "مخفی‌کردن ویدئو", "لایه در پروژه باقی می‌ماند ولی نمایش داده نمی‌شود", selected.hidden) { v ->
+            onEdit(selected.id, "hidden") { it.copy(hidden = v) }
+        }
+        ZButton("حذف لایه ویدئویی", { onDelete(selected.id) }, Modifier.fillMaxWidth(), kind = ZBtn.Danger, icon = ZI.Trash, compact = true)
+        Txt("صدای لایه‌های ویدئویی فعلاً بی‌صداست؛ کنترل صدای مستقل در نسخهٔ بعدی اضافه می‌شود.", style = ZType.caption, color = Z.TextSec)
     }
 }
 
@@ -2525,11 +2904,12 @@ private fun ClipPanel(
     ripple: Boolean,
     onRipple: (Boolean) -> Unit,
     onGoto: (Long) -> Unit,
-    onSeekClip: (Int) -> Unit
+    onSeekClip: (Int) -> Unit,
+    picked: Set<Int>,
+    onPicked: (Set<Int>) -> Unit
 ) {
     val segs = map.segs
     val ci = map.locate(posMs).first
-    var picked by remember(segs.size) { mutableStateOf(setOf<Int>()) }
     var multiSpeed by remember { mutableStateOf(1f) }
     var freezeSec by remember { mutableStateOf(2) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Z.S3)) {
@@ -2628,6 +3008,12 @@ private fun ClipPanel(
                 ZChip(speedLabel(sp), kotlin.math.abs(curSpeed - sp) < 0.01f, { if (canSpeed) onApply(EdlOps.setSpeed(segs, posMs, sp)) })
             }
         }
+        ZSlider(
+            "تنظیم دقیق سرعت (۰٫۱× تا ۸×)", curSpeed.coerceIn(0.1f, 8f), 0.1f, 8f,
+            { v -> if (canSpeed) onApply(EdlOps.setSpeed(segs, posMs, v)) },
+            steps = 78, readout = ::speedLabel
+        )
+        Txt("هر حرکت اسلایدر سرعت همین کلیپ را با گام ۰٫۱× تغییر می‌دهد؛ ۱× سرعت عادی است.", style = ZType.caption, color = Z.TextSec)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
             val up = EdlOps.ramp(segs, posMs, listOf(1f, 1.5f, 2.5f, 4f))
             val down = EdlOps.ramp(segs, posMs, listOf(4f, 2.5f, 1.5f, 1f))
@@ -2649,27 +3035,27 @@ private fun ClipPanel(
                 verticalArrangement = Arrangement.spacedBy(Z.S2)
             ) {
                 segs.indices.forEach { i ->
-                    ZChip(fa(i + 1), i in picked, { picked = if (i in picked) picked - i else picked + i })
+                    ZChip(fa(i + 1), i in picked, { onPicked(if (i in picked) picked - i else picked + i) })
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
-                ClipTool(ZI.Check, "همه", picked.size < segs.size, Z.Text, Modifier.weight(1f)) { picked = segs.indices.toSet() }
-                ClipTool(ZI.Close, "هیچ‌کدام", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) { picked = emptySet() }
+                ClipTool(ZI.Check, "همه", picked.size < segs.size, Z.Text, Modifier.weight(1f)) { onPicked(segs.indices.toSet()) }
+                ClipTool(ZI.Close, "هیچ‌کدام", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) { onPicked(emptySet()) }
                 ClipTool(ZI.Position, "برو به اولی", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) { onSeekClip(picked.min()) }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
                 ClipTool(ZI.Copy, "کپی", picked.isNotEmpty(), Z.Text, Modifier.weight(1f)) {
-                    onApply(EdlOps.duplicateMany(segs, picked)); picked = emptySet()
+                    onApply(EdlOps.duplicateMany(segs, picked)); onPicked(emptySet())
                 }
                 ClipTool(ZI.Trash, "حذف", picked.isNotEmpty() && picked.size < segs.size, Z.Danger, Modifier.weight(1f)) {
-                    onApply(EdlOps.deleteMany(segs, picked)); picked = emptySet()
+                    onApply(EdlOps.deleteMany(segs, picked)); onPicked(emptySet())
                 }
             }
             Txt("جابه‌جایی انتخاب‌شده‌ها", style = ZType.label, color = Z.TextSec)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
                 listOf(2 to "به اول", 0 to "یکی جلوتر", 1 to "یکی عقب‌تر", 3 to "به آخر").forEach { (mode, label) ->
                     ZChip(label, false, {
-                        EdlOps.moveMany(segs, picked, mode)?.let { r -> onApply(r.result); picked = r.picked }
+                        EdlOps.moveMany(segs, picked, mode)?.let { r -> onApply(r.result); onPicked(r.picked) }
                     }, Modifier.weight(1f))
                 }
             }

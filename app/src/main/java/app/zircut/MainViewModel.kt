@@ -50,6 +50,7 @@ import app.zircut.timeline.EdlMap
 import app.zircut.timeline.EdlOps
 import app.zircut.timeline.Layer
 import app.zircut.timeline.LayerKeys
+import app.zircut.timeline.VideoOverlay
 import app.zircut.timeline.LayerOps
 import app.zircut.timeline.NamedStyle
 import app.zircut.timeline.TextStyles
@@ -127,6 +128,8 @@ data class UiState(
     val extras: List<ExtraMedia> = emptyList(),
     /** text and picture layers over the video; times are on the edited timeline */
     val layers: List<Layer> = emptyList(),
+    /** independent video layers composited above the edited timeline */
+    val videoOverlays: List<VideoOverlay> = emptyList(),
     /** id of the layer being edited, -1 = none (not saved) */
     val selectedLayer: Int = -1,
     /** music / voice-over clips (part 5); times are on the edited timeline */
@@ -140,6 +143,8 @@ data class UiState(
     val duckMusic: Boolean = false,
     /** ripple editing: layers and audio clips after a clip change move with it (app setting, not saved in projects) */
     val ripple: Boolean = false,
+    /** timeline snapping (magnet) while dragging / trimming clips and layers (app setting, not saved in projects) */
+    val snap: Boolean = true,
     /** real waveforms (one byte per 20 ms) by audio file name */
     val waves: Map<String, ByteArray> = emptyMap(),
     /** short status/error line shown in the editor */
@@ -159,12 +164,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val store = ProjectStore(ctx)
     private var lastSavedKey = 0
     private var saveJob: Job? = null
-    /** one undo step = the clip list and the layers as they were before the edit */
+    /** one undo step = clip list, visual layers and audio state before the edit */
     private class Snap(
         val segs: List<Range>?,
         val phrases: List<Phrase>,
         val original: List<Phrase>,
         val layers: List<Layer>,
+        val videoOverlays: List<VideoOverlay>,
         val audio: List<AudioClip>,
         val mainVol: Float,
         val mainMuted: Boolean,
@@ -199,6 +205,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 themeId = prefs.getString("theme", "violet_blue") ?: "violet_blue",
                 styleId = prefs.getString("style", "zarbati") ?: "zarbati",
                 ripple = prefs.getBoolean("ripple", false),
+                snap = prefs.getBoolean("snap", true),
                 myTemplates = loadMyTemplates(),
                 layout = CapLayout(
                     x = prefs.getFloat("lx", 0.5f), y = prefs.getFloat("ly", 0.66f), mw = prefs.getFloat("lmw", 0.9f),
@@ -257,7 +264,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---------- projects ----------
     private fun keyOf(s: UiState): Int =
-        java.util.Objects.hash(s.projectId, s.projectName, s.phrases, s.original, s.options, s.styleId, s.fontId, s.layout, s.grade, s.fx, s.segments, s.extras, s.layers, s.audio, s.mainVolume, s.mainMuted, s.fx, s.exportSettings, s.duckMusic)
+        java.util.Objects.hash(s.projectId, s.projectName, s.phrases, s.original, s.options, s.styleId, s.fontId, s.layout, s.grade, s.fx, s.segments, s.extras, s.layers, s.videoOverlays, s.audio, s.mainVolume, s.mainMuted, s.fx, s.exportSettings, s.duckMusic)
 
     /** Called for every state change: saves the open project half a second after the last edit. */
     private fun autosave(s: UiState) {
@@ -283,7 +290,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     name = s.projectName.ifBlank { old.name }, updatedAt = System.currentTimeMillis(),
                     durationMs = info.durationMs, width = info.width, height = info.height
                 )
-                store.save(ProjectData(m, s.phrases, s.original, s.options, s.styleId, s.fontId, s.layout, s.grade, s.segments, s.extras, s.layers, s.audio, s.mainVolume, s.mainMuted, s.fx, s.exportSettings, s.duckMusic))
+                store.save(ProjectData(m, s.phrases, s.original, s.options, s.styleId, s.fontId, s.layout, s.grade, s.segments, s.extras, s.layers, s.audio, s.mainVolume, s.mainMuted, s.fx, s.exportSettings, s.duckMusic, s.videoOverlays))
                 store.list()
             } catch (e: Exception) {
                 null
@@ -299,7 +306,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---------- timeline history (clip edits and layer edits) ----------
     private fun snap() = _ui.value.let {
-        Snap(it.segments, it.phrases, it.original, it.layers, it.audio, it.mainVolume, it.mainMuted, it.duckMusic, it.grade, it.fx, it.exportSettings, it.options, it.styleId, it.fontId, it.layout)
+        Snap(it.segments, it.phrases, it.original, it.layers, it.videoOverlays, it.audio, it.mainVolume, it.mainMuted, it.duckMusic, it.grade, it.fx, it.exportSettings, it.options, it.styleId, it.fontId, it.layout)
     }
 
     private fun pushHistory() {
@@ -327,6 +334,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 if (ch != null) {
                     n = n.copy(
                         layers = app.zircut.timeline.Ripple.layers(s.layers, ch),
+                        videoOverlays = app.zircut.timeline.Ripple.videoOverlays(s.videoOverlays, ch),
                         audio = app.zircut.timeline.Ripple.audio(s.audio, ch),
                         fx = if (s.fx.vkeys.isEmpty()) s.fx else s.fx.copy(vkeys = app.zircut.timeline.Ripple.videoKeys(s.fx.vkeys, ch))
                     )
@@ -334,6 +342,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
             counts(n)
         }
+    }
+
+    fun setSnap(on: Boolean) {
+        prefs.edit().putBoolean("snap", on).apply()
+        _ui.update { it.copy(snap = on) }
     }
 
     fun setRipple(on: Boolean) {
@@ -349,7 +362,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update {
             counts(it.copy(
                 segments = prev.segs, phrases = prev.phrases, original = prev.original,
-                layers = prev.layers, audio = prev.audio, mainVolume = prev.mainVol,
+                layers = prev.layers, videoOverlays = prev.videoOverlays, audio = prev.audio, mainVolume = prev.mainVol,
                 mainMuted = prev.mainMuted, duckMusic = prev.duck, grade = prev.grade, fx = prev.fx, exportSettings = prev.exportSettings,
                 options = prev.options, styleId = prev.styleId, fontId = prev.fontId, layout = prev.layout
             ))
@@ -365,7 +378,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update {
             counts(it.copy(
                 segments = next.segs, phrases = next.phrases, original = next.original,
-                layers = next.layers, audio = next.audio, mainVolume = next.mainVol,
+                layers = next.layers, videoOverlays = next.videoOverlays, audio = next.audio, mainVolume = next.mainVol,
                 mainMuted = next.mainMuted, duckMusic = next.duck, grade = next.grade, fx = next.fx, exportSettings = next.exportSettings,
                 options = next.options, styleId = next.styleId, fontId = next.fontId, layout = next.layout
             ))
@@ -489,7 +502,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * Changes one layer. Calls with the same [key] that follow each other closely (slider drags, typing,
      * finger gestures) become ONE undo step.
      */
-    fun editLayer(id: Int, key: String, change: (Layer) -> Layer) {
+    fun editLayer(id: Int, key: String, newStep: Boolean = false, change: (Layer) -> Layer) {
         val cur = _ui.value
         val i = cur.layers.indexOfFirst { it.id == id }
         if (i < 0) return
@@ -497,7 +510,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (cur.layers[i].locked && key != "lock" && key != "hide") return
         val now = System.currentTimeMillis()
         val k = "$id|$key"
-        if (k != lastEditKey || now - lastEditAt > 900L) {
+        // newStep: one finished drag on the timeline is always its own undo step, even right after another drag of the same layer
+        if (newStep || k != lastEditKey || now - lastEditAt > 900L) {
             pushHistory()
             lastEditKey = k
         }
@@ -529,7 +543,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      */
     fun editLayerAt(id: Int, key: String, atMs: Long, change: (Layer) -> Layer) {
         val l = _ui.value.layers.firstOrNull { it.id == id } ?: return
-        if (l.keys.isEmpty() || key !in POSE_KEYS) editLayer(id, key, change)
+        if (l.keys.isEmpty() || key !in POSE_KEYS) editLayer(id, key, change = change)
         else editLayer(id, key) { cur -> LayerKeys.edited(cur, atMs, change) }
     }
 
@@ -803,6 +817,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             val keepFiles = HashSet<String>()
             keepExtras.forEach { keepFiles.add(it.file) }
             s.layers.forEach { if (!it.isText) keepFiles.add(it.file) }
+            s.videoOverlays.forEach { keepFiles.add(it.file) }
             s.audio.forEach { keepFiles.add(it.file); keepFiles.add(it.file + ".pk") }
             if (s.fx.lutFile.isNotEmpty()) keepFiles.add(s.fx.lutFile)
             s.segments?.forEach { if (it.look.key.bgFile.isNotEmpty()) keepFiles.add(it.look.key.bgFile) }
@@ -810,7 +825,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 var bytes = 0L
                 store.dir(s.projectId).listFiles()?.forEach { f ->
                     val n = f.name
-                    val ours = n.startsWith("extra_") || n.startsWith("layer_") || n.startsWith("audio_") || n.startsWith("rec_") || n.startsWith("lut_") || n.startsWith("keybg_")
+                    val ours = n.startsWith("extra_") || n.startsWith("layer_") || n.startsWith("overlay_") || n.startsWith("audio_") || n.startsWith("rec_") || n.startsWith("lut_") || n.startsWith("keybg_")
                     if (f.isFile && ours && n !in keepFiles) {
                         bytes += f.length()
                         f.delete()
@@ -927,13 +942,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Changes one audio clip. Calls with the same [key] that follow each other closely (slider drags) are ONE undo step. */
-    fun editAudio(id: Int, key: String, change: (AudioClip) -> AudioClip) {
+    fun editAudio(id: Int, key: String, newStep: Boolean = false, change: (AudioClip) -> AudioClip) {
         val cur = _ui.value
         val i = cur.audio.indexOfFirst { it.id == id }
         if (i < 0) return
         val now = System.currentTimeMillis()
         val k = "a$id|$key"
-        if (k != lastEditKey || now - lastEditAt > 900L) {
+        // newStep: one finished drag on the timeline is always its own undo step, even right after another drag of the same clip
+        if (newStep || k != lastEditKey || now - lastEditAt > 900L) {
             pushHistory()
             lastEditKey = k
         }
@@ -1178,6 +1194,83 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** Copies an MP4 into the project and adds it as an independent overlay (not as a main-timeline clip). */
+    fun importVideoOverlay(uri: Uri, atOutMs: Long, totalMs: Long) {
+        val s0 = _ui.value
+        if (s0.projectId.isEmpty()) return
+        if (!VideoOverlay.canAdd(s0.videoOverlays.size)) {
+            _ui.update { it.copy(message = "حداکثر ${VideoOverlay.MAX_LAYERS} لایهٔ ویدئویی می‌توانی اضافه کنی.") }
+            return
+        }
+        viewModelScope.launch {
+            _ui.update { it.copy(message = "در حال افزودن لایه ویدئویی…") }
+            try {
+                val overlay = withContext(Dispatchers.IO) {
+                    val dir = store.dir(s0.projectId)
+                    val diskMaxId = dir.listFiles()?.mapNotNull { f ->
+                        Regex("overlay_(\\d+)\\.mp4").matchEntire(f.name)?.groupValues?.getOrNull(1)?.toIntOrNull()
+                    }?.maxOrNull() ?: 0
+                    val id = maxOf(diskMaxId, s0.videoOverlays.maxOfOrNull { it.id } ?: 0) + 1
+                    val dest = File(dir, "overlay_$id.mp4")
+                    try {
+                        val input = ctx.contentResolver.openInputStream(uri) ?: throw java.io.IOException("فایل خوانده نشد")
+                        input.use { src -> dest.outputStream().use { out -> src.copyTo(out) } }
+                        val info = probe(Uri.fromFile(dest))
+                        val start = atOutMs.coerceIn(0L, totalMs)
+                        val end = minOf(totalMs, start + info.durationMs)
+                        if (info.durationMs < 200L || end - start < 200L) throw java.io.IOException("مدت ویدئو معتبر نیست")
+                        VideoOverlay(id, dest.name, info.durationMs, info.width, info.height, start, end).also {
+                            if (!it.valid()) throw java.io.IOException("مشخصات لایه ویدئویی معتبر نیست")
+                        }
+                    } catch (e: Exception) { dest.delete(); throw e }
+                }
+                pushHistory()
+                _ui.update { it.copy(videoOverlays = it.videoOverlays + overlay, message = "لایه ویدئویی اضافه شد") }
+            } catch (e: Exception) {
+                _ui.update { it.copy(message = "افزودن لایه ویدئویی ناموفق بود: ${e.message}") }
+            }
+        }
+    }
+
+    fun setVideoOverlayKeyframe(id: Int, posMs: Long, add: Boolean) {
+        val overlay = _ui.value.videoOverlays.firstOrNull { it.id == id } ?: return
+        val next = if (add) {
+            val pose = app.zircut.timeline.VideoOverlayKeys.pose(overlay, posMs)
+            app.zircut.timeline.VideoOverlayKeys.upsert(overlay, posMs, pose)
+        } else {
+            app.zircut.timeline.VideoOverlayKeys.removeAt(overlay, posMs)
+        }
+        if (next == overlay) return
+        pushHistory()
+        lastEditKey = ""
+        _ui.update { state ->
+            counts(state.copy(videoOverlays = state.videoOverlays.map {
+                if (it.id == id) next else it
+            }))
+        }
+    }
+
+    fun editVideoOverlay(id: Int, key: String, change: (VideoOverlay) -> VideoOverlay) {
+        val cur = _ui.value
+        val i = cur.videoOverlays.indexOfFirst { it.id == id }
+        if (i < 0) return
+        val now = System.currentTimeMillis()
+        val historyKey = "pip|$id|$key"
+        if (historyKey != lastEditKey || now - lastEditAt > 900L) pushHistory()
+        lastEditKey = historyKey
+        lastEditAt = now
+        val next = cur.videoOverlays.toMutableList()
+        next[i] = change(next[i])
+        _ui.update { counts(it.copy(videoOverlays = next)) }
+    }
+
+    fun removeVideoOverlay(id: Int) {
+        val s = _ui.value
+        if (s.videoOverlays.none { it.id == id }) return
+        pushHistory()
+        _ui.update { counts(it.copy(videoOverlays = it.videoOverlays.filterNot { v -> v.id == id })) }
+    }
+
     /**
      * Freeze frame: the picture under the playhead is saved as a photo and put on the timeline as a photo clip of [lenMs],
      * exactly at the playhead (the clip under it is split there, so the video continues after the still).
@@ -1294,7 +1387,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     styleId = data.styleId, layout = data.layout, grade = data.grade, fx = data.fx, exportSettings = data.export,
                     fontId = if (it.fonts.any { f -> f.id == data.fontId }) data.fontId else it.fontId,
                     projectId = id, projectName = data.meta.name, saveStatus = "saved",
-                    segments = data.segments, undoCount = 0, redoCount = 0, extras = data.extras, layers = data.layers, selectedLayer = -1, audio = data.audio, selectedAudio = -1, mainVolume = data.mainVolume, mainMuted = data.mainMuted, duckMusic = data.duckMusic, waves = emptyMap(), message = "",
+                    segments = data.segments, undoCount = 0, redoCount = 0, extras = data.extras, layers = data.layers, videoOverlays = data.videoOverlays, selectedLayer = -1, audio = data.audio, selectedAudio = -1, mainVolume = data.mainVolume, mainMuted = data.mainMuted, duckMusic = data.duckMusic, waves = emptyMap(), message = "",
                     notice = "", debug = "", stage = Stage.Review, activity = emptyList(), activityFor = "", scanning = false
                 )
             }
@@ -1575,7 +1668,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     video = Uri.fromFile(store.mediaFile(created.id)), info = info, phrases = emptyList(), original = emptyList(),
                     options = it.options.copy(removeSilence = false), activity = emptyList(), activityFor = "", scanning = false,
                     perf = "", stage = Stage.Review, projectId = created.id, projectName = created.name, saveStatus = "saved",
-                    segments = null, undoCount = 0, redoCount = 0, extras = emptyList(), layers = emptyList(), selectedLayer = -1, audio = emptyList(), selectedAudio = -1, mainVolume = 1f, mainMuted = false, waves = emptyMap(), message = ""
+                    segments = null, undoCount = 0, redoCount = 0, extras = emptyList(), layers = emptyList(), videoOverlays = emptyList(), selectedLayer = -1, audio = emptyList(), selectedAudio = -1, mainVolume = 1f, mainMuted = false, waves = emptyMap(), message = ""
                 )
             }
             undoStack.clear(); redoStack.clear()
@@ -1866,7 +1959,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun reset() {
         job?.cancel()
-        _ui.update { it.copy(stage = Stage.Idle, video = null, info = null, phrases = emptyList(), projectId = "", projectName = "", saveStatus = "", segments = null, undoCount = 0, redoCount = 0, extras = emptyList(), layers = emptyList(), selectedLayer = -1, audio = emptyList(), selectedAudio = -1, mainVolume = 1f, mainMuted = false, waves = emptyMap(), message = "") }
+        _ui.update { it.copy(stage = Stage.Idle, video = null, info = null, phrases = emptyList(), projectId = "", projectName = "", saveStatus = "", segments = null, undoCount = 0, redoCount = 0, extras = emptyList(), layers = emptyList(), videoOverlays = emptyList(), selectedLayer = -1, audio = emptyList(), selectedAudio = -1, mainVolume = 1f, mainMuted = false, waves = emptyMap(), message = "") }
     }
 
     fun backToReview() { _ui.update { it.copy(stage = Stage.Review) } }
@@ -1886,6 +1979,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val layerDir = store.dir(st.projectId)
         if (st.layers.any { !it.isText && !File(layerDir, it.file).exists() }) {
             _ui.update { it.copy(stage = Stage.Failed("فایل عکس یکی از لایه‌ها پیدا نشد. آن لایه را از تب «لایه» حذف کن.")) }
+            return
+        }
+        if (st.videoOverlays.any { !File(layerDir, it.file).isFile }) {
+            _ui.update { it.copy(stage = Stage.Failed("فایل یکی از لایه‌های ویدئویی پیدا نشد. آن لایه را حذف و دوباره اضافه کن.")) }
             return
         }
         // clip times are source-tagged (Src); the exporter wants plain times inside each clip's own file
@@ -1915,7 +2012,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val ex = Exporter(ctx)
         exporter = ex
         ex.start(
-            Exporter.Params(uri, info, localRanges, st.phrases, Styles.byId(st.styleId), font, st.options, out, st.layout, st.grade, sources, captionRanges(ranges), st.layers, layerDir, layerFont, mix, st.fx, st.exportSettings),
+            Exporter.Params(uri, info, localRanges, st.phrases, Styles.byId(st.styleId), font, st.options, out, st.layout, st.grade, sources, captionRanges(ranges), st.layers, layerDir, layerFont, mix, st.fx, st.exportSettings, st.videoOverlays),
             onProgress = { p -> _ui.update { s -> if (s.stage is Stage.Working) s.copy(stage = Stage.Working("در حال ساخت ویدیو…", p)) else s } },
             onDone = {
                 lockOff()
