@@ -1198,8 +1198,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun importVideoOverlay(uri: Uri, atOutMs: Long, totalMs: Long) {
         val s0 = _ui.value
         if (s0.projectId.isEmpty()) return
-        if (s0.videoOverlays.isNotEmpty()) {
-            _ui.update { it.copy(message = "در نسخهٔ 0.1.250 فعلاً یک لایهٔ ویدئویی هم‌زمان پشتیبانی می‌شود.") }
+        if (!VideoOverlay.canAdd(s0.videoOverlays.size)) {
+            _ui.update { it.copy(message = "حداکثر ${VideoOverlay.MAX_LAYERS} لایهٔ ویدئویی می‌توانی اضافه کنی.") }
             return
         }
         viewModelScope.launch {

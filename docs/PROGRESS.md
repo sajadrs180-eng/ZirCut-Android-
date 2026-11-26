@@ -1,5 +1,13 @@
 # ZirCut — progress and hand-off notes
 
+## 0.1.251 — multiple independent video overlay tracks (implementation prepared; build/device checks pending)
+- Raises independent video overlays from one to a maximum of three per project.
+- Preview uses a dedicated `PreviewPlayer` for each overlay and synchronizes all active layers against the edited-timeline clock.
+- Exporter creates one Media3 sequence per visible overlay; compositor input IDs map to each overlay, preserving the optional transparent top sequence for text/photo/FX overlays.
+- Adds capacity validation tests and releases players when overlay layers are deleted.
+- Audio on overlay videos remains muted. Masks, per-overlay keyframes, and drag positioning are not included.
+- Must verify GitHub Actions build, simultaneous preview, and exported composition order/performance on a real phone.
+
 ## 0.1.248 — direct timeline clip selection
 - Tapping a video/photo block selects it, opens the Clip panel, and seeks to the tapped time.
 - The selected clip has an amber outline independent of the playhead's current-clip highlight.

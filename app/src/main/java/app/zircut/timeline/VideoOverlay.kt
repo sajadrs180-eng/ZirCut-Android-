@@ -23,4 +23,11 @@ data class VideoOverlay(
         sourceDurationMs >= 200L && sourceWidth > 0 && sourceHeight > 0 && startMs >= 0L &&
         endMs > startMs && endMs - startMs >= 200L && endMs - startMs <= sourceDurationMs &&
         x in 0f..1f && y in 0f..1f && width in 0.08f..1f
+
+    companion object {
+        /** Limit concurrent decoder/compositor inputs for predictable performance on phones. */
+        const val MAX_LAYERS = 3
+
+        fun canAdd(currentLayerCount: Int): Boolean = currentLayerCount in 0 until MAX_LAYERS
+    }
 }

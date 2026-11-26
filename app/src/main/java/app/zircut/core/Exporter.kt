@@ -120,7 +120,7 @@ class Exporter(private val ctx: Context) {
         val totalDurationMs = p.ranges.sumOf { it.len }
         val overlayItems = p.videoOverlays.filter {
             it.valid() && !it.hidden && it.startMs < totalDurationMs && p.projectDir != null && File(p.projectDir, it.file).isFile
-        }.take(1)
+        }.take(VideoOverlay.MAX_LAYERS)
         val hasPip = overlayItems.isNotEmpty()
         var acc = 0L
         val multi = p.sources != null
@@ -254,7 +254,7 @@ class Exporter(private val ctx: Context) {
             EditedMediaItemSequence(listOf(overlayItem))
         } else null
         val mixItem = p.mixAudio?.let { EditedMediaItem.Builder(MediaItem.fromUri(Uri.fromFile(it))).build() }
-        // Media3 draws the first registered video sequence on top. Text/FX get a transparent top sequence, then PIP, then the main timeline.
+        // Media3 draws earlier registered video sequences on top: optional text/FX sequence, ordered PIP layers, then the main timeline.
         val allSequences = ArrayList<EditedMediaItemSequence>()
         if (topOverlaySequence != null) allSequences.add(topOverlaySequence)
         allSequences.addAll(overlaySequences)
@@ -341,7 +341,7 @@ class Exporter(private val ctx: Context) {
 }
 
 /**
- * PIP sequences are registered before the main sequence because Media3 composites the first input on top.
+ * PIP sequences are registered in project order before the main sequence because Media3 composites earlier inputs on top.
  * Position/size are normalized to the output frame and timing is evaluated on the edited timeline.
  */
 @UnstableApi

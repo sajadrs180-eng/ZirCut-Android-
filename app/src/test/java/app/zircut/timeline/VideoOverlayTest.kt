@@ -15,6 +15,15 @@ class VideoOverlayTest {
         assertTrue(validOverlay().valid())
     }
 
+    @Test fun supportsUpToThreeIndependentVideoLayers() {
+        assertTrue(VideoOverlay.canAdd(0))
+        assertTrue(VideoOverlay.canAdd(1))
+        assertTrue(VideoOverlay.canAdd(2))
+        assertFalse(VideoOverlay.canAdd(3))
+        assertFalse(VideoOverlay.canAdd(4))
+        assertFalse(VideoOverlay.canAdd(-1))
+    }
+
     @Test fun rejectsOverlayLongerThanItsSourceVideo() {
         assertFalse(validOverlay().copy(endMs = 10_000L).valid())
     }

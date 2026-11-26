@@ -67,6 +67,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -262,7 +263,7 @@ fun EditorScreen(
         value = withContext(Dispatchers.IO) { runCatching { DeviceCaps.sourceFps(appCtx, uri) }.getOrDefault(30f) }
     }
     val player = remember { PreviewPlayer(appCtx) }
-    val pipPlayer = remember { PreviewPlayer(appCtx) }
+    val pipPlayers = remember { mutableMapOf<Int, PreviewPlayer>() }
     // music / voice-over clips play next to the video; recording state of the voice-over
     val audioPrev = remember { AudioPreview(appCtx) }
     var recorder by remember { mutableStateOf<VoiceRecorder?>(null) }
@@ -276,7 +277,11 @@ fun EditorScreen(
     }
     val extrasNow by rememberUpdatedState(ui.extras)
     val overlaysNow by rememberUpdatedState(ui.videoOverlays)
-    pipPlayer.uriOf = { idx -> overlaysNow.firstOrNull { it.id == idx }?.let { Uri.fromFile(File(projDir, it.file)) } }
+    fun playerForPip(id: Int): PreviewPlayer = pipPlayers.getOrPut(id) {
+        PreviewPlayer(appCtx).also { pp ->
+            pp.uriOf = { idx -> overlaysNow.firstOrNull { it.id == idx }?.let { Uri.fromFile(File(projDir, it.file)) } }
+        }
+    }
     val audioNow by rememberUpdatedState(ui.audio)
     val duckNow by rememberUpdatedState(ui.duckMusic)
 
@@ -339,7 +344,7 @@ fun EditorScreen(
     fun pauseIfPlaying() {
         if (playing) {
             player.pause()
-            pipPlayer.pause()
+            pipPlayers.values.forEach { it.pause() }
             playing = false
         }
     }
@@ -432,6 +437,10 @@ fun EditorScreen(
         if (ui.videoOverlays.isNotEmpty() && ui.videoOverlays.none { it.id == selectedPip }) {
             selectedPip = ui.videoOverlays.last().id
         }
+        val retainedIds = ui.videoOverlays.map { it.id }.toSet()
+        pipPlayers.keys.filterNot { it in retainedIds }.toList().forEach { id ->
+            pipPlayers.remove(id)?.release()
+        }
     }
 
     LaunchedEffect(playing, recorder) {
@@ -492,11 +501,16 @@ fun EditorScreen(
                     }
                 }
             }
-            val pip = overlaysNow.firstOrNull { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
-            if (pip != null) {
-                pipPlayer.setVolume(0f) // PIP audio is intentionally muted in 0.1.250.
-                pipPlayer.sync(pip.id, posMs - pip.startMs, playing)
-            } else pipPlayer.pause()
+            val activePipIds = overlaysNow.asSequence()
+                .filter { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
+                .map { it.id }.toSet()
+            overlaysNow.forEach { pip ->
+                val pp = playerForPip(pip.id)
+                if (pip.id in activePipIds) {
+                    pp.setVolume(0f) // Independent PIP audio remains muted in 0.1.251.
+                    pp.sync(pip.id, posMs - pip.startMs, playing)
+                } else pp.pause()
+            }
             audioPrev.update(audioNow, posMs, playing, projDir, duckNow, speechNow)
             delay(33)
         }
@@ -508,7 +522,8 @@ fun EditorScreen(
     DisposableEffect(Unit) {
         onDispose {
             player.release()
-            pipPlayer.release()
+            pipPlayers.values.forEach { it.release() }
+            pipPlayers.clear()
             audioPrev.release()
             recorder?.cancel()
         }
@@ -741,29 +756,42 @@ fun EditorScreen(
                 if (curIsImage && curExtra != null) {
                     PreviewImage(File(projDir, curExtra.file).absolutePath, Modifier.fillMaxSize())
                 }
-                val activePip = ui.videoOverlays.firstOrNull { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
-                if (activePip != null) {
-                    val pipW = fw * activePip.width
-                    val pipAspect = activePip.sourceWidth.toFloat() / activePip.sourceHeight.toFloat()
-                    val pipH = pipW / pipAspect.coerceIn(0.2f, 5f)
-                    Box(
-                        Modifier.align(Alignment.TopStart)
-                            .offset(x = fw * (activePip.x - activePip.width / 2f), y = fh * (activePip.y - (pipH / fh) / 2f))
-                            .size(pipW, pipH)
-                            .clip(RoundedCornerShape(6.dp))
-                            .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
-                    ) {
-                        AndroidView(
-                            factory = { c -> TextureView(c).apply {
-                                surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-                                    override fun onSurfaceTextureAvailable(t: SurfaceTexture, w: Int, h: Int) { pipPlayer.setSurface(Surface(t)) }
-                                    override fun onSurfaceTextureSizeChanged(t: SurfaceTexture, w: Int, h: Int) {}
-                                    override fun onSurfaceTextureDestroyed(t: SurfaceTexture): Boolean { pipPlayer.setSurface(null); return true }
-                                    override fun onSurfaceTextureUpdated(t: SurfaceTexture) {}
-                                }
-                            } },
-                            modifier = Modifier.fillMaxSize()
-                        )
+                val activePips = ui.videoOverlays.filter { !it.hidden && posMs >= it.startMs && posMs < it.endMs }
+                // Compose draws later children on top; reverse the list to match export sequence order.
+                activePips.asReversed().forEach { activePip ->
+                    key(activePip.id) {
+                        val layerPlayer = playerForPip(activePip.id)
+                        val pipW = fw * activePip.width
+                        val pipAspect = activePip.sourceWidth.toFloat() / activePip.sourceHeight.toFloat()
+                        val pipH = pipW / pipAspect.coerceIn(0.2f, 5f)
+                        Box(
+                            Modifier.align(Alignment.TopStart)
+                                .offset(x = fw * (activePip.x - activePip.width / 2f), y = fh * (activePip.y - (pipH / fh) / 2f))
+                                .size(pipW, pipH)
+                                .clip(RoundedCornerShape(6.dp))
+                                .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
+                        ) {
+                            AndroidView(
+                                factory = { c -> TextureView(c).apply {
+                                    var ownedSurface: Surface? = null
+                                    surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+                                        override fun onSurfaceTextureAvailable(t: SurfaceTexture, w: Int, h: Int) {
+                                            ownedSurface = Surface(t)
+                                            layerPlayer.setSurface(ownedSurface)
+                                        }
+                                        override fun onSurfaceTextureSizeChanged(t: SurfaceTexture, w: Int, h: Int) {}
+                                        override fun onSurfaceTextureDestroyed(t: SurfaceTexture): Boolean {
+                                            layerPlayer.setSurface(null)
+                                            ownedSurface?.release()
+                                            ownedSurface = null
+                                            return true
+                                        }
+                                        override fun onSurfaceTextureUpdated(t: SurfaceTexture) {}
+                                    }
+                                } },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
                 }
                 Canvas(Modifier.fillMaxSize()) {
@@ -2312,7 +2340,8 @@ private fun VideoOverlayPanel(
 ) {
     val selected = overlays.firstOrNull { it.id == selectedId }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Z.S3)) {
-        ZButton("افزودن ویدئوی MP4 روی ویدئو (PIP)", onAdd, Modifier.fillMaxWidth(), icon = ZI.Plus, compact = true)
+        ZButton("افزودن ویدئوی MP4 (حداکثر ${VideoOverlay.MAX_LAYERS} لایه)", onAdd, Modifier.fillMaxWidth(), icon = ZI.Plus, compact = true,
+            enabled = overlays.size < VideoOverlay.MAX_LAYERS)
         if (overlays.isNotEmpty()) {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
                 items(overlays.size) { i ->
@@ -2322,7 +2351,7 @@ private fun VideoOverlayPanel(
             }
         }
         if (selected == null) {
-            Txt("یک فایل MP4 اضافه کن تا مستقل از کلیپ اصلی، روی تصویر نمایش داده شود. زمان، جایگاه و اندازه از این پنل قابل تنظیم است.", style = ZType.caption, color = Z.TextSec)
+            Txt("تا ${VideoOverlay.MAX_LAYERS} ویدئوی مستقل می‌توانند هم‌زمان روی تصویر اصلی قرار بگیرند. زمان، جایگاه و اندازهٔ هر لایه جداگانه تنظیم می‌شود.", style = ZType.caption, color = Z.TextSec)
             return@Column
         }
         Txt("زمان ${faTime(selected.startMs)} تا ${faTime(selected.endMs)}", style = ZType.labelStrong)
@@ -2340,7 +2369,7 @@ private fun VideoOverlayPanel(
         ZSlider("اندازه", selected.width, 0.12f, 0.8f, { v -> onEdit(selected.id, "width") { it.copy(width = v) } }, readout = ::pct)
         ZToggleRow(ZI.Film, "مخفی‌کردن ویدئو", "لایه در پروژه باقی می‌ماند ولی نمایش داده نمی‌شود", selected.hidden) { v -> onEdit(selected.id, "hidden") { it.copy(hidden = v) } }
         ZButton("حذف لایه ویدئویی", { onDelete(selected.id) }, Modifier.fillMaxWidth(), kind = ZBtn.Danger, icon = ZI.Trash, compact = true)
-        Txt("صدا در نسخهٔ فعلی PIP بی‌صداست؛ کنترل صدای مستقل در نسخهٔ بعدی اضافه می‌شود.", style = ZType.caption, color = Z.TextSec)
+        Txt("صدای لایه‌های ویدئویی فعلاً بی‌صداست؛ کنترل صدای مستقل در نسخهٔ بعدی اضافه می‌شود.", style = ZType.caption, color = Z.TextSec)
     }
 }
 
