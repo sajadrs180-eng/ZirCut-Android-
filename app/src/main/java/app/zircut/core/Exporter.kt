@@ -37,6 +37,7 @@ import app.zircut.timeline.Layer
 import app.zircut.timeline.LayerAnim
 import app.zircut.timeline.LayerKeys
 import app.zircut.timeline.VideoOverlay
+import app.zircut.timeline.VideoOverlayKeys
 import com.google.common.collect.ImmutableList
 import java.io.File
 import java.io.FileOutputStream
@@ -360,12 +361,15 @@ private class PipCompositorSettings(
             ?: return OverlaySettings.Builder().build() // transparent top sequence or main timeline
         val ms = presentationTimeUs / 1000L
         val visible = ms >= layer.startMs && ms < minOf(layer.endMs, totalDurationMs)
-        return OverlaySettings.Builder()
-            .setScale(layer.width.coerceIn(0.08f, 1f), layer.width.coerceIn(0.08f, 1f))
+        val pose = VideoOverlayKeys.pose(layer, ms)
+        val scale = (layer.width * pose.scale).coerceIn(0.04f, 2f)
+        val settings = OverlaySettings.Builder()
+            .setScale(scale, scale)
             .setOverlayFrameAnchor(0f, 0f)
-            .setBackgroundFrameAnchor((layer.x.coerceIn(0f, 1f) - 0.5f) * 2f, (0.5f - layer.y.coerceIn(0f, 1f)) * 2f)
-            .setAlphaScale(if (visible) 1f else 0f)
-            .build()
+            .setBackgroundFrameAnchor((pose.x.coerceIn(0f, 1f) - 0.5f) * 2f, (0.5f - pose.y.coerceIn(0f, 1f)) * 2f)
+            .setAlphaScale(if (visible) pose.opacity.coerceIn(0f, 1f) else 0f)
+        if (pose.rotation != 0f) settings.setRotationDegrees(-pose.rotation)
+        return settings.build()
     }
 }
 

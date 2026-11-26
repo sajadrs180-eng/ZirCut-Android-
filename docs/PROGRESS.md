@@ -1,5 +1,14 @@
 # ZirCut — progress and hand-off notes
 
+## 0.1.252 — keyframed video-overlay transforms (implementation prepared; build/device checks pending)
+- Adds keyframes for PIP position, scale, rotation, and opacity, with smooth/linear/hold interpolation.
+- Editor controls add/update/remove keyframes at the playhead and edit the evaluated transform.
+- Preview and Media3 export use the same `VideoOverlayKeys` interpolation.
+- Project JSON persists rotation, opacity, and keys; old project files default to the previous static appearance.
+- Unit tests cover interpolation, insertion/removal, and invalid keyframe ranges.
+- Masks and blend modes are intentionally not claimed as implemented; they remain separate work for later checkpoints.
+- Must verify GitHub Actions build, old-project loading, animated preview, and rendered export on a real phone.
+
 ## 0.1.251 — multiple independent video overlay tracks (implementation prepared; build/device checks pending)
 - Raises independent video overlays from one to a maximum of three per project.
 - Preview uses a dedicated `PreviewPlayer` for each overlay and synchronizes all active layers against the edited-timeline clock.

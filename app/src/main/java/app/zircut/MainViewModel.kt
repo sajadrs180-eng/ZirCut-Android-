@@ -1232,6 +1232,24 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun setVideoOverlayKeyframe(id: Int, posMs: Long, add: Boolean) {
+        val overlay = _ui.value.videoOverlays.firstOrNull { it.id == id } ?: return
+        val next = if (add) {
+            val pose = app.zircut.timeline.VideoOverlayKeys.pose(overlay, posMs)
+            app.zircut.timeline.VideoOverlayKeys.upsert(overlay, posMs, pose)
+        } else {
+            app.zircut.timeline.VideoOverlayKeys.removeAt(overlay, posMs)
+        }
+        if (next == overlay) return
+        pushHistory()
+        lastEditKey = ""
+        _ui.update { state ->
+            counts(state.copy(videoOverlays = state.videoOverlays.map {
+                if (it.id == id) next else it
+            }))
+        }
+    }
+
     fun editVideoOverlay(id: Int, key: String, change: (VideoOverlay) -> VideoOverlay) {
         val cur = _ui.value
         val i = cur.videoOverlays.indexOfFirst { it.id == id }

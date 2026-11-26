@@ -168,6 +168,7 @@ import app.zircut.timeline.MyTemplate
 import app.zircut.timeline.VideoTemplates
 import app.zircut.timeline.Layer
 import app.zircut.timeline.VideoOverlay
+import app.zircut.timeline.VideoOverlayKeys
 import app.zircut.timeline.LayerAnim
 import app.zircut.timeline.LayerKeys
 import app.zircut.timeline.LayerOps
@@ -761,13 +762,19 @@ fun EditorScreen(
                 activePips.asReversed().forEach { activePip ->
                     key(activePip.id) {
                         val layerPlayer = playerForPip(activePip.id)
-                        val pipW = fw * activePip.width
+                        val pipPose = VideoOverlayKeys.pose(activePip, posMs)
+                        val pipWidth = (activePip.width * pipPose.scale).coerceIn(0.04f, 2f)
+                        val pipW = fw * pipWidth
                         val pipAspect = activePip.sourceWidth.toFloat() / activePip.sourceHeight.toFloat()
                         val pipH = pipW / pipAspect.coerceIn(0.2f, 5f)
                         Box(
                             Modifier.align(Alignment.TopStart)
-                                .offset(x = fw * (activePip.x - activePip.width / 2f), y = fh * (activePip.y - (pipH / fh) / 2f))
+                                .offset(x = fw * (pipPose.x - pipWidth / 2f), y = fh * (pipPose.y - (pipH / fh) / 2f))
                                 .size(pipW, pipH)
+                                .graphicsLayer {
+                                    rotationZ = pipPose.rotation
+                                    alpha = pipPose.opacity.coerceIn(0f, 1f)
+                                }
                                 .clip(RoundedCornerShape(6.dp))
                                 .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
                         ) {
@@ -1075,6 +1082,7 @@ fun EditorScreen(
                             onSelect = { selectedPip = it },
                             onAdd = { pauseIfPlaying(); onAddVideoOverlay(posMs, kept) },
                             onEdit = { id, key, change -> vm.editVideoOverlay(id, key, change) },
+                            onKeyframe = { id, time, add -> vm.setVideoOverlayKeyframe(id, time, add) },
                             onDelete = { id -> vm.removeVideoOverlay(id); if (selectedPip == id) selectedPip = -1 }
                         )
                         EdTab.AUDIO -> AudioPanel(
@@ -2336,7 +2344,9 @@ private fun ColorRow(colors: List<Int>, selected: Int, allowNone: Boolean, onPic
 private fun VideoOverlayPanel(
     overlays: List<VideoOverlay>, selectedId: Int, posMs: Long, totalMs: Long,
     onSelect: (Int) -> Unit, onAdd: () -> Unit,
-    onEdit: (Int, String, (VideoOverlay) -> VideoOverlay) -> Unit, onDelete: (Int) -> Unit
+    onEdit: (Int, String, (VideoOverlay) -> VideoOverlay) -> Unit,
+    onKeyframe: (Int, Long, Boolean) -> Unit,
+    onDelete: (Int) -> Unit
 ) {
     val selected = overlays.firstOrNull { it.id == selectedId }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Z.S3)) {
@@ -2351,9 +2361,29 @@ private fun VideoOverlayPanel(
             }
         }
         if (selected == null) {
-            Txt("تا ${VideoOverlay.MAX_LAYERS} ویدئوی مستقل می‌توانند هم‌زمان روی تصویر اصلی قرار بگیرند. زمان، جایگاه و اندازهٔ هر لایه جداگانه تنظیم می‌شود.", style = ZType.caption, color = Z.TextSec)
+            Txt("تا ${VideoOverlay.MAX_LAYERS} ویدئوی مستقل می‌توانند هم‌زمان روی تصویر اصلی قرار بگیرند. زمان، جایگاه، اندازه و حرکت هر لایه جداگانه تنظیم می‌شود.", style = ZType.caption, color = Z.TextSec)
             return@Column
         }
+
+        val pose = VideoOverlayKeys.pose(selected, posMs)
+        fun updatePose(key: String, transform: (app.zircut.timeline.VideoOverlayPose) -> app.zircut.timeline.VideoOverlayPose) {
+            onEdit(selected.id, key) { current ->
+                val currentPose = VideoOverlayKeys.pose(current, posMs)
+                val nextPose = transform(currentPose)
+                if (current.keys.isEmpty()) {
+                    current.copy(
+                        x = nextPose.x,
+                        y = nextPose.y,
+                        width = (current.width * nextPose.scale).coerceIn(0.08f, 1f),
+                        rotation = nextPose.rotation,
+                        opacity = nextPose.opacity
+                    )
+                } else {
+                    VideoOverlayKeys.upsert(current, posMs, nextPose)
+                }
+            }
+        }
+
         Txt("زمان ${faTime(selected.startMs)} تا ${faTime(selected.endMs)}", style = ZType.labelStrong)
         val maxStart = (totalMs - selected.len).coerceAtLeast(0L)
         if (maxStart > 0L) ZSlider("شروع روی تایم‌لاین", selected.startMs.toFloat(), 0f, maxStart.toFloat(), { v ->
@@ -2364,10 +2394,53 @@ private fun VideoOverlayPanel(
         if (maxDuration >= 200L) ZSlider("مدت نمایش", selected.len.toFloat(), 200f, maxDuration.toFloat(), { v ->
             onEdit(selected.id, "duration") { it.copy(endMs = (it.startMs + v.toLong()).coerceAtMost(totalMs)) }
         }, readout = { faTime(it.toLong()) })
-        ZSlider("موقعیت افقی", selected.x, 0.05f, 0.95f, { v -> onEdit(selected.id, "x") { it.copy(x = v) } }, readout = ::pct)
-        ZSlider("موقعیت عمودی", selected.y, 0.05f, 0.95f, { v -> onEdit(selected.id, "y") { it.copy(y = v) } }, readout = ::pct)
-        ZSlider("اندازه", selected.width, 0.12f, 0.8f, { v -> onEdit(selected.id, "width") { it.copy(width = v) } }, readout = ::pct)
-        ZToggleRow(ZI.Film, "مخفی‌کردن ویدئو", "لایه در پروژه باقی می‌ماند ولی نمایش داده نمی‌شود", selected.hidden) { v -> onEdit(selected.id, "hidden") { it.copy(hidden = v) } }
+
+        Txt("کی‌فریم ترنسفورم", style = ZType.labelStrong, color = Z.TextSec)
+        val relative = posMs - selected.startMs
+        val keyHere = selected.keys.minByOrNull { kotlin.math.abs(it.tMs - relative) }
+            ?.takeIf { kotlin.math.abs(it.tMs - relative) <= VideoOverlayKeys.NEAR_MS }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
+            ClipTool(ZI.Plus, if (keyHere == null) "ثبت کی‌فریم" else "به‌روزرسانی کلید",
+                posMs >= selected.startMs && posMs < selected.endMs, Z.Accent, Modifier.weight(1f)) {
+                onKeyframe(selected.id, posMs, true)
+            }
+            ClipTool(ZI.Trash, "حذف کی‌فریم", keyHere != null, Z.Danger, Modifier.weight(1f)) {
+                onKeyframe(selected.id, posMs, false)
+            }
+        }
+        if (keyHere != null) {
+            Txt("نوع حرکت بین این کلید و کلید بعدی", style = ZType.caption, color = Z.TextSec)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
+                listOf(LayerKeys.EASE_SMOOTH to "نرم", LayerKeys.EASE_LINEAR to "خطی", LayerKeys.EASE_HOLD to "ثابت").forEach { (value, label) ->
+                    ZChip(label, keyHere.ease == value, {
+                        onEdit(selected.id, "keyframe-ease") { current ->
+                            current.copy(keys = current.keys.map { k ->
+                                if (k.tMs == keyHere.tMs) k.copy(ease = value) else k
+                            })
+                        }
+                    })
+                }
+            }
+        }
+
+        ZSlider("موقعیت افقی", pose.x, 0.05f, 0.95f, { v ->
+            updatePose("x") { it.copy(x = v) }
+        }, readout = ::pct)
+        ZSlider("موقعیت عمودی", pose.y, 0.05f, 0.95f, { v ->
+            updatePose("y") { it.copy(y = v) }
+        }, readout = ::pct)
+        ZSlider("اندازه", (selected.width * pose.scale).coerceIn(0.08f, 1f), 0.08f, 1f, { v ->
+            updatePose("scale") { it.copy(scale = (v / selected.width).coerceIn(0.1f, 6f)) }
+        }, readout = ::pct)
+        ZSlider("چرخش", pose.rotation, -180f, 180f, { v ->
+            updatePose("rotation") { it.copy(rotation = v) }
+        }, readout = { "${it.toInt()}°" })
+        ZSlider("شفافیت", pose.opacity, 0.05f, 1f, { v ->
+            updatePose("opacity") { it.copy(opacity = v) }
+        }, readout = ::pct)
+        ZToggleRow(ZI.Film, "مخفی‌کردن ویدئو", "لایه در پروژه باقی می‌ماند ولی نمایش داده نمی‌شود", selected.hidden) { v ->
+            onEdit(selected.id, "hidden") { it.copy(hidden = v) }
+        }
         ZButton("حذف لایه ویدئویی", { onDelete(selected.id) }, Modifier.fillMaxWidth(), kind = ZBtn.Danger, icon = ZI.Trash, compact = true)
         Txt("صدای لایه‌های ویدئویی فعلاً بی‌صداست؛ کنترل صدای مستقل در نسخهٔ بعدی اضافه می‌شود.", style = ZType.caption, color = Z.TextSec)
     }
