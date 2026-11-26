@@ -154,6 +154,7 @@ class ProjectStore(private val ctx: Context) {
                 .put("s", v.startMs).put("e", v.endMs).put("x", v.x.toDouble()).put("y", v.y.toDouble())
                 .put("width", v.width.toDouble()).put("muted", v.muted).put("hidden", v.hidden)
                 .put("rot", v.rotation.toDouble()).put("opacity", v.opacity.toDouble())
+                .put("mask", v.maskType)
                 .put("keys", JSONArray().also { ka ->
                     v.keys.forEach { k ->
                         ka.put(JSONObject().put("t", k.tMs).put("x", k.x.toDouble())
@@ -279,7 +280,8 @@ class ProjectStore(private val ctx: Context) {
                         v.optDouble("rot", 0.0).toFloat().coerceIn(-LayerKeys.ROT_MAX, LayerKeys.ROT_MAX),
                         v.optDouble("opacity", 1.0).toFloat().coerceIn(0.05f, 1f),
                         keysFrom(v.optJSONArray("keys"), v.optDouble("rot", 0.0).toFloat())
-                            .filter { it.tMs in 0L..(v.optLong("e") - v.optLong("s")).coerceAtLeast(0L) })
+                            .filter { it.tMs in 0L..(v.optLong("e") - v.optLong("s")).coerceAtLeast(0L) },
+                        v.optInt("mask", VideoOverlay.MASK_NONE).coerceIn(VideoOverlay.MASK_NONE, VideoOverlay.MASK_ROUNDED_RECT))
                         .takeIf { it.valid() }
                 }.take(12)
             },

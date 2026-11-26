@@ -227,7 +227,7 @@ class Exporter(private val ctx: Context) {
                 MediaItem.ClippingConfiguration.Builder().setStartPositionMs(0L).setEndPositionMs(durationMs).build()
             ).build()
             val pipItem = EditedMediaItem.Builder(media).setRemoveAudio(true)
-                .setEffects(Effects(emptyList(), listOf(pipPresentation))).build()
+                .setEffects(Effects(emptyList(), listOf(pipPresentation, VideoOverlayMaskEffect(layer.maskType)))).build()
             val seqItems = ArrayList<EditedMediaItem>()
             if (startMs > 0L) seqItems.add(transparentItem(startMs, sourceW, sourceH, wantFps.takeIf { it > 0 } ?: 30))
             seqItems.add(pipItem)

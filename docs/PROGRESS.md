@@ -1,5 +1,12 @@
 # ZirCut — progress and hand-off notes
 
+## 0.1.253 — video overlay masks (implementation prepared; build/device checks pending)
+- Adds non-destructive circle and rounded-rectangle alpha masks for independent video overlays.
+- Preview uses Compose clipping; Media3 export applies a custom GL alpha-mask effect before composition.
+- Mask choice is saved in project JSON; older projects default to no mask.
+- Freehand, feather, invert, animated masks, and masks for main-track/photo/text layers remain out of scope.
+- Must verify GitHub Actions build, preview/export parity, project save/load, and performance on a real phone.
+
 ## 0.1.252 — keyframed video-overlay transforms (implementation prepared; build/device checks pending)
 - Adds keyframes for PIP position, scale, rotation, and opacity, with smooth/linear/hold interpolation.
 - Editor controls add/update/remove keyframes at the playhead and edit the evaluated transform.

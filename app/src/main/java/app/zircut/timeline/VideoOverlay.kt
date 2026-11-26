@@ -22,7 +22,9 @@ data class VideoOverlay(
     /** Base opacity. */
     val opacity: Float = 1f,
     /** Keyframe times are relative to startMs. */
-    val keys: List<Keyframe> = emptyList()
+    val keys: List<Keyframe> = emptyList(),
+    /** Alpha mask applied identically in preview and export: none, circle, rounded rectangle. */
+    val maskType: Int = MASK_NONE
 ) {
     val len: Long get() = endMs - startMs
 
@@ -36,6 +38,7 @@ data class VideoOverlay(
             width.isFinite() && width in 0.08f..1f &&
             rotation.isFinite() && rotation in -LayerKeys.ROT_MAX..LayerKeys.ROT_MAX &&
             opacity.isFinite() && opacity in 0.05f..1f &&
+            maskType in MASK_NONE..MASK_ROUNDED_RECT &&
             keys.size <= LayerKeys.MAX_KEYS &&
             keys == keys.sortedBy { it.tMs } &&
             keys.all {
@@ -51,6 +54,9 @@ data class VideoOverlay(
     companion object {
         /** Limit concurrent decoder/compositor inputs for predictable performance on phones. */
         const val MAX_LAYERS = 3
+        const val MASK_NONE = 0
+        const val MASK_CIRCLE = 1
+        const val MASK_ROUNDED_RECT = 2
         fun canAdd(currentLayerCount: Int): Boolean = currentLayerCount in 0 until MAX_LAYERS
     }
 }

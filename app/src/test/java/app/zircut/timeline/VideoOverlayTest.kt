@@ -40,6 +40,16 @@ class VideoOverlayTest {
     }
 
 
+    @Test fun acceptsSupportedVideoOverlayMasks() {
+        assertTrue(validOverlay().copy(maskType = VideoOverlay.MASK_NONE).valid())
+        assertTrue(validOverlay().copy(maskType = VideoOverlay.MASK_CIRCLE).valid())
+        assertTrue(validOverlay().copy(maskType = VideoOverlay.MASK_ROUNDED_RECT).valid())
+    }
+
+    @Test fun rejectsUnknownVideoOverlayMask() {
+        assertFalse(validOverlay().copy(maskType = 99).valid())
+    }
+
     @Test fun interpolatesVideoOverlayKeyframesForTransform() {
         val overlay = validOverlay().copy(
             keys = listOf(

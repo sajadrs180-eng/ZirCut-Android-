@@ -66,3 +66,13 @@ Automated: `./gradlew testDebugUnitTest` (app/src/test/.../LogicTest.kt — pure
 8. Undo/redo after each drag: exactly one step each; a drag that returns to the start adds none. Quick second drag of the same clip = a second step.
 9. Layer with keyframes: trim its start earlier/later; animation timing on the timeline stays the same. A locked layer does not move or trim.
 10. Open an older project: nothing changes in it; save, reopen: identical.
+
+
+## 0.1.253 — video overlay masks
+- [ ] Load a project created before 0.1.253; all video overlays should remain unmasked.
+- [ ] Set each overlay mask to none, circle, and rounded rectangle; confirm the preview shape.
+- [ ] Save and reopen the project; confirm each overlay retains its mask.
+- [ ] Export a project with a masked overlay over a visible background; confirm transparent pixels reveal the lower track.
+- [ ] Compare preview and exported frames for mask geometry and edge placement.
+- [ ] Test portrait and landscape source videos, rotation, opacity, keyframes, and multiple simultaneous overlays.
+- [ ] Check export speed, memory use, and playback smoothness on a real device.

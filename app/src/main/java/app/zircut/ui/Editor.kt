@@ -767,6 +767,11 @@ fun EditorScreen(
                         val pipW = fw * pipWidth
                         val pipAspect = activePip.sourceWidth.toFloat() / activePip.sourceHeight.toFloat()
                         val pipH = pipW / pipAspect.coerceIn(0.2f, 5f)
+                        val pipMaskShape = when (activePip.maskType) {
+                            VideoOverlay.MASK_CIRCLE -> CircleShape
+                            VideoOverlay.MASK_ROUNDED_RECT -> RoundedCornerShape(14)
+                            else -> RoundedCornerShape(6.dp)
+                        }
                         Box(
                             Modifier.align(Alignment.TopStart)
                                 .offset(x = fw * (pipPose.x - pipWidth / 2f), y = fh * (pipPose.y - (pipH / fh) / 2f))
@@ -775,8 +780,8 @@ fun EditorScreen(
                                     rotationZ = pipPose.rotation
                                     alpha = pipPose.opacity.coerceIn(0f, 1f)
                                 }
-                                .clip(RoundedCornerShape(6.dp))
-                                .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
+                                .clip(pipMaskShape)
+                                .border(1.dp, Color.White.copy(alpha = 0.8f), pipMaskShape)
                         ) {
                             AndroidView(
                                 factory = { c -> TextureView(c).apply {
@@ -2394,6 +2399,20 @@ private fun VideoOverlayPanel(
         if (maxDuration >= 200L) ZSlider("مدت نمایش", selected.len.toFloat(), 200f, maxDuration.toFloat(), { v ->
             onEdit(selected.id, "duration") { it.copy(endMs = (it.startMs + v.toLong()).coerceAtMost(totalMs)) }
         }, readout = { faTime(it.toLong()) })
+
+        Txt("ماسک ویدئو", style = ZType.labelStrong, color = Z.TextSec)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Z.S2)) {
+            listOf(
+                VideoOverlay.MASK_NONE to "بدون ماسک",
+                VideoOverlay.MASK_CIRCLE to "دایره‌ای",
+                VideoOverlay.MASK_ROUNDED_RECT to "گوشه‌گرد"
+            ).forEach { (value, label) ->
+                ZChip(label, selected.maskType == value, {
+                    onEdit(selected.id, "mask") { it.copy(maskType = value) }
+                })
+            }
+        }
+        Txt("ماسک در پیش‌نمایش و خروجی نهایی اعمال می‌شود.", style = ZType.caption, color = Z.TextSec)
 
         Txt("کی‌فریم ترنسفورم", style = ZType.labelStrong, color = Z.TextSec)
         val relative = posMs - selected.startMs
